@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class Polygon {
+public class PhysicsPolygon {
     private List<Vector2> points;
     private Double mass;
     private Double density;
@@ -9,12 +9,12 @@ public class Polygon {
     private Vector2 centerOfMass;
     private Double inertia;
 
-    public Polygon() {
+    public PhysicsPolygon() {
         this.points = new ArrayList<>();
         this.mass = 1.0;
     }
 
-    public Polygon(Vector2[] points, double mass) {
+    public PhysicsPolygon(Vector2[] points, double mass) {
         this();
         List<Vector2> copyList = new ArrayList<>();
         for (Vector2 point : points) {
@@ -24,9 +24,13 @@ public class Polygon {
         this.mass = mass;
     }
 
-    public Polygon(List<Vector2> points, double mass) {
+    public PhysicsPolygon(List<Vector2> points, double mass) {
         this.points = points;
         this.mass = mass;
+    }
+
+    public List<Vector2> getPoints() {
+        return points;
     }
 
     /*
