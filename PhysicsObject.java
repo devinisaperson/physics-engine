@@ -9,6 +9,7 @@ public class PhysicsObject {
     Vector2 acceleration = new Vector2(0,-9.8);
     double rotation = 0.0;
     double omega = 0.0;
+    double alpha = 0.0;
 
     public PhysicsObject() {
         List<Vector2> points = new ArrayList<>();

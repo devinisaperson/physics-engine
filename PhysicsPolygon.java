@@ -41,9 +41,30 @@ public class PhysicsPolygon {
      * 
      * https://en.wikipedia.org/wiki/Second_moment_of_area#Any_polygon
      */
-    public void updatePhysics() {
-        this.area = 0.0;
+    public void updateInertia(Vector2 pivot) {
         this.inertia = 0.0;
+
+        Vector2 curr;
+        Vector2 next = points.get(0);
+        for (int i = 0; i < points.size(); i++) {
+            curr = next;
+            next = points.get((i+1)%points.size());
+
+            double trapizodArea = curr.cross(next);
+            area += trapizodArea;
+            centerOfMass = centerOfMass.add(curr.add(next).scale(trapizodArea));
+
+            Vector2 dcurr = curr.minus(pivot);
+            Vector2 dnext = next.minus(pivot);
+            inertia += trapizodArea * (dcurr.x*dnext.y + 2*dcurr.x*dcurr.y + 2*dnext.x*dnext.y + dnext.x*dcurr.y);
+        }
+        this.density = mass/area;
+
+        inertia *= density/12;
+    }
+
+    public Vector2 updateCenterOfMass() {
+        this.area = 0.0;
         this.centerOfMass = new Vector2();
 
         Vector2 curr;
@@ -55,11 +76,20 @@ public class PhysicsPolygon {
             double trapizodArea = curr.cross(next);
             area += trapizodArea;
             centerOfMass = centerOfMass.add(curr.add(next).scale(trapizodArea));
-            inertia += trapizodArea * (curr.x*next.y + 2*curr.x*curr.y + 2*next.x*next.y + next.x*curr.y);
         }
-        this.density = mass/area;
 
         centerOfMass = centerOfMass.scale(1/(6*area));
-        inertia *= density/12;
+        
+        return centerOfMass;
+    }
+
+    public Vector2 centerToCenterOfMass() {
+        Vector2 oldCenterOfMass = updateCenterOfMass();
+
+        for (Vector2 point : points) {
+            point = point.minus(oldCenterOfMass);
+        }
+
+        return oldCenterOfMass;
     }
 }

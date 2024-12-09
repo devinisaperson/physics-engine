@@ -27,6 +27,10 @@ public class Vector2 {
         return new Vector2(v.x+u.x, v.y+u.y);
     }
 
+    public static Vector2 minus(Vector2 v, Vector2 u) {
+        return new Vector2(v.x-u.x, v.y-u.y);
+    }
+
     public static Vector2 hadamard(Vector2 v, Vector2 u) {
         return new Vector2(v.x*u.x, v.y*u.y);
     }
@@ -40,6 +44,7 @@ public class Vector2 {
     }
 
     public Vector2 add(Vector2 that) {return Vector2.add(this, that);}
+    public Vector2 minus(Vector2 that) {return Vector2.minus(this, that);}
     public Vector2 hadamard(Vector2 that) {return Vector2.hadamard(this, that);}
     public double dot(Vector2 that) {return Vector2.dot(this, that);}
     public double cross(Vector2 that) {return Vector2.cross(this, that);}
