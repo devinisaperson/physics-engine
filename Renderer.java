@@ -9,6 +9,7 @@ public class Renderer extends JComponent {
 
     @Override
     public void paintComponent(Graphics g) {
+        physicsObject.update(0.01);
         physicsObject.render(g, camera);
     }
 }

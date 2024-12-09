@@ -12,7 +12,7 @@ public class Main {
 
         frame.setVisible(true);
         try {
-            while (true) { 
+            while (true) {
                 frame.repaint();
             }
         } catch (Exception e) {
