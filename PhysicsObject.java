@@ -5,7 +5,7 @@ import java.util.List;
 public class PhysicsObject {
     PhysicsPolygon physicsShape;
     Vector2 position = new Vector2();
-    Vector2 velocity = new Vector2(40,40);
+    Vector2 velocity = new Vector2(8,8);
     Vector2 acceleration = new Vector2(0,-9.8);
     double rotation = 0.0;
     double omega = 0.0;
@@ -13,10 +13,10 @@ public class PhysicsObject {
     public PhysicsObject() {
         List<Vector2> points = new ArrayList<>();
         points.add(new Vector2(0,0));
-        points.add(new Vector2(0,10));
-        points.add(new Vector2(5,5));
-        points.add(new Vector2(10,10));
-        points.add(new Vector2(10,0));
+        points.add(new Vector2(0,1));
+        points.add(new Vector2(0.5,0.5));
+        points.add(new Vector2(1,1));
+        points.add(new Vector2(1,0));
 
         physicsShape = new PhysicsPolygon(points, 1.0);
     }

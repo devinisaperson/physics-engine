@@ -1,3 +1,5 @@
+
+import static java.lang.System.currentTimeMillis;
 import javax.swing.JFrame;
 
 public class Main {
@@ -10,9 +12,24 @@ public class Main {
         Renderer renderer = new Renderer();
         frame.add(renderer);
 
+        double physicsStepLength = 0.01;
+        
+        double currentTime = currentTimeMillis()/1000.0;
+        double accumulator = 0.0;
+
         frame.setVisible(true);
         try {
             while (true) {
+                double newTime = currentTimeMillis()/1000.0;
+                double frameTime = newTime - currentTime;
+                currentTime = newTime;
+
+                accumulator += frameTime;
+
+                while (accumulator >= physicsStepLength) {
+                    renderer.update(physicsStepLength);
+                    accumulator -= physicsStepLength;
+                }
                 frame.repaint();
             }
         } catch (Exception e) {

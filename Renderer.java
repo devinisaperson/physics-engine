@@ -7,9 +7,12 @@ public class Renderer extends JComponent {
     private Camera camera = new Camera();
     private PhysicsObject physicsObject = new PhysicsObject();
 
+    public void update(double dt) {
+        physicsObject.update(dt);
+    }
+
     @Override
     public void paintComponent(Graphics g) {
-        physicsObject.update(0.01);
         physicsObject.render(g, camera);
     }
 }
