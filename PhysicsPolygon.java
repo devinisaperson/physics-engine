@@ -5,7 +5,6 @@ public class PhysicsPolygon {
     private List<Vector2> points;
     private Double mass;
     private Double density;
-    private Double area;
     private Vector2 centerOfMass;
     private Double inertia;
 
@@ -43,6 +42,7 @@ public class PhysicsPolygon {
      */
     public void updateInertia(Vector2 pivot) {
         this.inertia = 0.0;
+        double area = 0.0;
 
         Vector2 curr;
         Vector2 next = points.get(0);
@@ -58,13 +58,14 @@ public class PhysicsPolygon {
             Vector2 dnext = next.minus(pivot);
             inertia += trapizodArea * (dcurr.x*dnext.y + 2*dcurr.x*dcurr.y + 2*dnext.x*dnext.y + dnext.x*dcurr.y);
         }
+        area /= 2;
         this.density = mass/area;
 
         inertia *= density/12;
     }
 
     public Vector2 updateCenterOfMass() {
-        this.area = 0.0;
+        double area = 0.0;
         this.centerOfMass = new Vector2();
 
         Vector2 curr;
@@ -77,7 +78,7 @@ public class PhysicsPolygon {
             area += trapizodArea;
             centerOfMass = centerOfMass.add(curr.add(next).scale(trapizodArea));
         }
-
+        area /= 2;
         centerOfMass = centerOfMass.scale(1/(6*area));
         
         return centerOfMass;
@@ -86,8 +87,8 @@ public class PhysicsPolygon {
     public Vector2 centerToCenterOfMass() {
         Vector2 oldCenterOfMass = updateCenterOfMass();
 
-        for (Vector2 point : points) {
-            point = point.minus(oldCenterOfMass);
+        for (int i = 0; i < points.size(); i++) {
+            points.set(i, points.get(i).minus(oldCenterOfMass));
         }
 
         return oldCenterOfMass;

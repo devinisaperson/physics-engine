@@ -19,10 +19,6 @@ public class Vector2 {
         this.y = that.y;
     }
 
-    public Vector2 scale(double k) {
-        return new Vector2(this.x*k, this.y*k);
-    }
-
     public static Vector2 add(Vector2 v, Vector2 u) {
         return new Vector2(v.x+u.x, v.y+u.y);
     }
@@ -48,4 +44,14 @@ public class Vector2 {
     public Vector2 hadamard(Vector2 that) {return Vector2.hadamard(this, that);}
     public double dot(Vector2 that) {return Vector2.dot(this, that);}
     public double cross(Vector2 that) {return Vector2.cross(this, that);}
+
+    public Vector2 scale(double k) {
+        return new Vector2(this.x*k, this.y*k);
+    }
+
+    public Vector2 rotate(double theta) {
+        double magnitude = Math.hypot(x, y);
+        theta += Math.atan2(y, x);
+        return new Vector2(magnitude * Math.cos(theta), magnitude * Math.sin(theta));
+    }
 }

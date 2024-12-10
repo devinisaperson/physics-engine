@@ -5,9 +5,9 @@ import java.util.List;
 public class PhysicsObject {
     PhysicsPolygon physicsShape;
     Vector2 position = new Vector2();
-    Vector2 velocity = new Vector2(8,8);
-    Vector2 acceleration = new Vector2(0,-9.8);
-    double rotation = 0.0;
+    Vector2 velocity = new Vector2(0,0);
+    Vector2 acceleration = new Vector2(0,0);
+    double rotation = 0;
     double omega = 0.0;
     double alpha = 0.0;
 
@@ -20,11 +20,18 @@ public class PhysicsObject {
         points.add(new Vector2(1,0));
 
         physicsShape = new PhysicsPolygon(points, 1.0);
+        updatePivot();
+    }
+
+    public void updatePivot() {
+        Vector2 nudge = physicsShape.centerToCenterOfMass();
+        position = position.add(nudge);
     }
 
     public void update(double dt) {
         velocity = velocity.add(acceleration.scale(dt));
         position = position.add(velocity.scale(dt));
+        rotation += dt;
     }
 
     public void render(Graphics g, Camera camera) {
@@ -35,7 +42,7 @@ public class PhysicsObject {
         int i = -1;
         for (Vector2 point : points) {
             i++;
-            Vector2 screenPoint = camera.worldToScreen(point.add(position));
+            Vector2 screenPoint = camera.worldToScreen(point.rotate(rotation).add(position));
             xPoints[i] = (int)Math.floor(screenPoint.x);
             yPoints[i] = (int)Math.floor(screenPoint.y);
         }
