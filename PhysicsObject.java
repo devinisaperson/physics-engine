@@ -28,10 +28,22 @@ public class PhysicsObject {
         position = position.add(nudge);
     }
 
+    public void applyContinuousForce(Vector2 point, Vector2 force) {
+        acceleration = acceleration.add(force.scale(1/physicsShape.getMass()));
+        alpha = point.cross(force.scale(1/physicsShape.getInertia()));
+    }
+
     public void update(double dt) {
+        acceleration = Vector2.ZERO;
+        alpha = 0;
+
+        applyContinuousForce(new Vector2(0.5,0.0), new Vector2(0.1,0.1));
+
         velocity = velocity.add(acceleration.scale(dt));
         position = position.add(velocity.scale(dt));
-        rotation += dt;
+
+        omega += alpha * dt;
+        rotation += omega * dt;
     }
 
     public void render(Graphics g, Camera camera) {

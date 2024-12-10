@@ -8,24 +8,23 @@ public class PhysicsPolygon {
     private Vector2 centerOfMass;
     private Double inertia;
 
-    public PhysicsPolygon() {
-        this.points = new ArrayList<>();
-        this.mass = 1.0;
-    }
-
     public PhysicsPolygon(Vector2[] points, double mass) {
-        this();
         List<Vector2> copyList = new ArrayList<>();
         for (Vector2 point : points) {
             copyList.add(new Vector2(point));
         }
         this.points.addAll(copyList); 
         this.mass = mass;
+
+        updateCenterOfMass();
+        updateInertia(new Vector2(0.0,0.0));
     }
 
     public PhysicsPolygon(List<Vector2> points, double mass) {
         this.points = points;
         this.mass = mass;
+        updateCenterOfMass();
+        updateInertia(new Vector2(0.0,0.0));
     }
 
     public List<Vector2> getPoints() {
@@ -92,5 +91,13 @@ public class PhysicsPolygon {
         }
 
         return oldCenterOfMass;
+    }
+
+    public Double getMass() {
+        return mass;
+    }
+
+    public Double getInertia() {
+        return inertia;
     }
 }
