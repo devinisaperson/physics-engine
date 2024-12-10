@@ -15,7 +15,7 @@ public class PhysicsObject {
         List<Vector2> points = new ArrayList<>();
         points.add(new Vector2(0,0));
         points.add(new Vector2(0,1));
-        //points.add(new Vector2(0.5,0.5));
+        points.add(new Vector2(0.5,0.5));
         points.add(new Vector2(1,1));
         points.add(new Vector2(1,0));
 
@@ -30,7 +30,7 @@ public class PhysicsObject {
 
     public void applyContinuousForce(Vector2 point, Vector2 force) {
         acceleration = acceleration.add(force.scale(1/physicsShape.getMass()));
-        alpha = point.cross(force.scale(1/physicsShape.getInertia()));
+        alpha += point.cross(force.scale(1/physicsShape.getInertia()));
     }
 
     public void update(double dt) {
@@ -40,7 +40,10 @@ public class PhysicsObject {
         applyContinuousForce(new Vector2(0.0,0.0), new Vector2(0,-9.8));
 
         Vector2 springPostion = new Vector2(5,5);
-        applyContinuousForce(new Vector2(0.0,0.0), (springPostion.minus(position)).scale(3));
+        applyContinuousForce(new Vector2(-0.5,0.0).rotate(rotation), (springPostion.minus(position)).scale(3));
+
+        applyContinuousForce(new Vector2(0.0,0.0), velocity.scale(-0.1));
+        alpha += omega*-0.1/physicsShape.getInertia();
 
         velocity = velocity.add(acceleration.scale(dt));
         position = position.add(velocity.scale(dt));
@@ -62,5 +65,14 @@ public class PhysicsObject {
             yPoints[i] = (int)Math.floor(screenPoint.y);
         }
         g.fillPolygon(xPoints, yPoints, points.size());
+
+        Vector2 springAttach = camera.worldToScreen(new Vector2(-0.5,0.0).rotate(rotation).add(position));
+        Vector2 springStart = camera.worldToScreen(new Vector2(5,5));
+        g.drawLine(
+            (int)Math.floor(springAttach.x),
+            (int)Math.floor(springAttach.y),
+            (int)Math.floor(springStart.x),
+            (int)Math.floor(springStart.y)
+        );
     }
 }
