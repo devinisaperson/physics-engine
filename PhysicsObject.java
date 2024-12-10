@@ -5,7 +5,7 @@ import java.util.List;
 public class PhysicsObject {
     PhysicsPolygon physicsShape;
     Vector2 position = new Vector2(0,0);
-    Vector2 velocity = new Vector2(0,5);
+    Vector2 velocity = new Vector2(-5,5);
     Vector2 acceleration = new Vector2(0,0);
     double rotation = 0;
     double omega = 0.0;
@@ -26,6 +26,7 @@ public class PhysicsObject {
     public void updatePivot() {
         Vector2 nudge = physicsShape.centerToCenterOfMass();
         position = position.add(nudge);
+        System.out.println(nudge.y);
     }
 
     public void applyContinuousForce(Vector2 point, Vector2 force) {
@@ -39,8 +40,8 @@ public class PhysicsObject {
 
         applyContinuousForce(new Vector2(0.0,0.0), new Vector2(0,-9.8));
 
-        Vector2 springPostion = new Vector2(5,5);
-        applyContinuousForce(new Vector2(-0.5,0.0).rotate(rotation), (springPostion.minus(position)).scale(3));
+        Vector2 springPostion = new Vector2(5,8);
+        applyContinuousForce(new Vector2(-0.5,-7.0/18.0).rotate(rotation), (springPostion.minus(position)).scale(3));
 
         applyContinuousForce(new Vector2(0.0,0.0), velocity.scale(-0.1));
         alpha += omega*-0.1/physicsShape.getInertia();
@@ -66,8 +67,8 @@ public class PhysicsObject {
         }
         g.fillPolygon(xPoints, yPoints, points.size());
 
-        Vector2 springAttach = camera.worldToScreen(new Vector2(-0.5,0.0).rotate(rotation).add(position));
-        Vector2 springStart = camera.worldToScreen(new Vector2(5,5));
+        Vector2 springAttach = camera.worldToScreen(new Vector2(-0.5,-7.0/18.0).rotate(rotation).add(position));
+        Vector2 springStart = camera.worldToScreen(new Vector2(5,8));
         g.drawLine(
             (int)Math.floor(springAttach.x),
             (int)Math.floor(springAttach.y),
