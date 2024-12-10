@@ -4,8 +4,8 @@ import java.util.List;
 
 public class PhysicsObject {
     PhysicsPolygon physicsShape;
-    Vector2 position = new Vector2(0,5);
-    Vector2 velocity = new Vector2(0,0);
+    Vector2 position = new Vector2(0,0);
+    Vector2 velocity = new Vector2(0,5);
     Vector2 acceleration = new Vector2(0,0);
     double rotation = 0;
     double omega = 0.0;
@@ -15,7 +15,7 @@ public class PhysicsObject {
         List<Vector2> points = new ArrayList<>();
         points.add(new Vector2(0,0));
         points.add(new Vector2(0,1));
-        points.add(new Vector2(0.5,0.5));
+        //points.add(new Vector2(0.5,0.5));
         points.add(new Vector2(1,1));
         points.add(new Vector2(1,0));
 
@@ -39,8 +39,8 @@ public class PhysicsObject {
 
         applyContinuousForce(new Vector2(0.0,0.0), new Vector2(0,-9.8));
 
-        Vector2 springPostion = new Vector2(0,5);
-        applyContinuousForce(new Vector2(0.0,0.0), (springPostion.minus(position)).scale(10));
+        Vector2 springPostion = new Vector2(5,5);
+        applyContinuousForce(new Vector2(0.0,0.0), (springPostion.minus(position)).scale(3));
 
         velocity = velocity.add(acceleration.scale(dt));
         position = position.add(velocity.scale(dt));
