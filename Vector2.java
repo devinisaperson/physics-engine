@@ -56,4 +56,13 @@ public class Vector2 {
         theta += Math.atan2(y, x);
         return new Vector2(magnitude * Math.cos(theta), magnitude * Math.sin(theta));
     }
+
+    public double magnitude() {
+        return Math.hypot(x, y);
+    }
+
+    public Vector2 normalize() {
+        double theta = Math.atan2(y, x);
+        return new Vector2(Math.cos(theta), Math.sin(theta));
+    }
 }

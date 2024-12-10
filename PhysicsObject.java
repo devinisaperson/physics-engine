@@ -4,7 +4,7 @@ import java.util.List;
 
 public class PhysicsObject {
     PhysicsPolygon physicsShape;
-    Vector2 position = new Vector2();
+    Vector2 position = new Vector2(0,5);
     Vector2 velocity = new Vector2(0,0);
     Vector2 acceleration = new Vector2(0,0);
     double rotation = 0;
@@ -37,7 +37,10 @@ public class PhysicsObject {
         acceleration = Vector2.ZERO;
         alpha = 0;
 
-        applyContinuousForce(new Vector2(0.5,0.0), new Vector2(0.1,0.1));
+        applyContinuousForce(new Vector2(0.0,0.0), new Vector2(0,-9.8));
+
+        Vector2 springPostion = new Vector2(0,5);
+        applyContinuousForce(new Vector2(0.0,0.0), (springPostion.minus(position)).scale(10));
 
         velocity = velocity.add(acceleration.scale(dt));
         position = position.add(velocity.scale(dt));
