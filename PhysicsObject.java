@@ -26,7 +26,6 @@ public class PhysicsObject {
     public void updatePivot() {
         Vector2 nudge = physicsShape.centerToCenterOfMass();
         position = position.add(nudge);
-        System.out.println(nudge.y);
     }
 
     public void applyContinuousForce(Vector2 point, Vector2 force) {

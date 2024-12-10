@@ -9,8 +9,9 @@ public class Main {
         frame.setSize(1280, 720);
         frame.setTitle("Game");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        Renderer renderer = new Renderer();
-        frame.add(renderer);
+        frame.setIgnoreRepaint(true);
+        Engine engine = new Engine();
+        frame.add(engine);
 
         double physicsStepLength = 0.01;
         
@@ -27,7 +28,7 @@ public class Main {
                 accumulator += frameTime;
 
                 while (accumulator >= physicsStepLength) {
-                    renderer.update(physicsStepLength);
+                    engine.update(physicsStepLength);
                     accumulator -= physicsStepLength;
                 }
                 frame.repaint();
