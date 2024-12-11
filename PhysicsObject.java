@@ -2,7 +2,7 @@ import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PhysicsObject {
+public class PhysicsObject implements GameObject {
     PhysicsPolygon physicsShape;
     Vector2 position = new Vector2(0,0);
     Vector2 velocity = new Vector2(-5,5);
@@ -33,7 +33,8 @@ public class PhysicsObject {
         alpha += point.cross(force.scale(1/physicsShape.getInertia()));
     }
 
-    public void update(double dt) {
+    @Override
+    public void physicsUpdate(double dt) {
         acceleration = Vector2.ZERO;
         alpha = 0;
 
@@ -52,6 +53,7 @@ public class PhysicsObject {
         rotation += omega * dt;
     }
 
+    @Override
     public void render(Graphics g, Camera camera) {
         List<Vector2> points = physicsShape.getPoints();
         int[] xPoints = new int[points.size()];
