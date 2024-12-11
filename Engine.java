@@ -10,8 +10,8 @@ public class Engine extends JComponent {
     private double accumulator = 1.0;
 
     public void update(double dt) {
-        accumulator += dt;
-        while (accumulator > 1.0) {
+        //accumulator += dt;
+        while (accumulator >= 1.0) {
             physicsObjects.add(new PhysicsObject());
             accumulator -= 1.0;
         }

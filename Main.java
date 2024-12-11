@@ -18,6 +18,9 @@ public class Main {
         double currentTime = currentTimeMillis()/1000.0;
         double accumulator = 0.0;
 
+        // note, the program *will* take up 20% of your CPU if you don't have this at a reasonable value
+        double maxFPS = 120.0;
+
         frame.setVisible(true);
         try {
             while (true) {
@@ -32,6 +35,7 @@ public class Main {
                     accumulator -= physicsStepLength;
                 }
                 frame.repaint();
+                Thread.sleep((long)(1000.0/maxFPS - frameTime));
             }
         } catch (Exception e) {
             System.out.println(e);
