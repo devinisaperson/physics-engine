@@ -1,6 +1,6 @@
 
 
-public class SceneSpring implements Scene {
+public class SceneSpring extends Scene {
     public SceneSpring() {
         gameObjects.add(new PhysicsObject());
     }

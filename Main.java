@@ -26,6 +26,8 @@ public class Main {
             while (true) {
                 double newTime = currentTimeMillis()/1000.0;
                 double frameTime = newTime - currentTime;
+                if ( frameTime > 0.25 )
+                    frameTime = 0.25;
                 currentTime = newTime;
 
                 accumulator += frameTime;

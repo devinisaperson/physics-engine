@@ -4,7 +4,8 @@ import javax.swing.JComponent;
 
 public class Engine extends JComponent {
     private Camera camera = new Camera();
-    private Scene scene = Scene.getInitialScene();
+    private Scene previousScene = null;
+    private Scene currentScene = Scene.getInitialScene();
     // private double accumulator = 1.0;
 
     public void update(double dt) {
@@ -15,14 +16,18 @@ public class Engine extends JComponent {
             accumulator -= 1.0;
         }
         */
-        for (GameObject gameObject : scene.gameObjects) {
-            gameObject.physicsUpdate(dt);
+        Scene nextScene = new Scene();
+        for (GameObject gameObject : currentScene.gameObjects) {
+            nextScene.gameObjects.add(gameObject.physicsUpdate(dt));
         }
+
+        currentScene = nextScene;
+        previousScene = currentScene;
     }
 
     @Override
     public void paintComponent(Graphics g) {
-        for (GameObject gameObject : scene.gameObjects) {
+        for (GameObject gameObject : currentScene.gameObjects) {
             gameObject.render(g, camera);
         }
     }

@@ -27,6 +27,17 @@ public class PhysicsPolygon {
         updateInertia(new Vector2(0.0,0.0));
     }
 
+    public PhysicsPolygon(PhysicsPolygon that) {
+        this.points = new ArrayList<>();
+        for (Vector2 point : that.points) {
+            this.points.add(new Vector2(point));
+        }
+        this.mass = that.mass;
+        this.density = that.density;
+        this.centerOfMass = new Vector2(that.centerOfMass);
+        this.inertia = that.inertia;
+    }
+
     public List<Vector2> getPoints() {
         return points;
     }

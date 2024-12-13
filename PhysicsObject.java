@@ -11,6 +11,8 @@ public class PhysicsObject implements GameObject {
     double omega = 0.0;
     double alpha = 0.0;
 
+    Vector2 springAttach = new Vector2(-0.5,-7.0/18.0);
+
     public PhysicsObject() {
         List<Vector2> points = new ArrayList<>();
         points.add(new Vector2(0,0));
@@ -23,25 +25,41 @@ public class PhysicsObject implements GameObject {
         updatePivot();
     }
 
+    public PhysicsObject(PhysicsObject that) {
+        this.physicsShape = new PhysicsPolygon(that.physicsShape);
+        this.position = new Vector2(that.position);
+        this.velocity = new Vector2(that.velocity);
+        this.acceleration = new Vector2(that.acceleration);
+        this.rotation = that.rotation;
+        this.omega = that.omega;
+        this.alpha = that.alpha;
+    }
+
     public void updatePivot() {
         Vector2 nudge = physicsShape.centerToCenterOfMass();
         position = position.add(nudge);
     }
 
-    public void applyContinuousForce(Vector2 point, Vector2 force) {
+    private void applyContinuousForce(Vector2 point, Vector2 force) {
         acceleration = acceleration.add(force.scale(1/physicsShape.getMass()));
         alpha += point.cross(force.scale(1/physicsShape.getInertia()));
     }
 
     @Override
-    public void physicsUpdate(double dt) {
+    public PhysicsObject physicsUpdate(double dt) {
+        PhysicsObject that = new PhysicsObject(this);
+        that.physicsUpdateSelf(dt);
+        return that;
+    }
+
+    private void physicsUpdateSelf(double dt) {
         acceleration = Vector2.ZERO;
         alpha = 0;
 
         applyContinuousForce(new Vector2(0.0,0.0), new Vector2(0,-9.8));
 
         Vector2 springPostion = new Vector2(5,8);
-        applyContinuousForce(new Vector2(-0.5,-7.0/18.0).rotate(rotation), (springPostion.minus(position)).scale(3));
+        applyContinuousForce(springAttach.rotate(rotation), (springPostion.minus(position)).scale(3));
 
         applyContinuousForce(new Vector2(0.0,0.0), velocity.scale(-0.1));
         alpha += omega*-0.1/physicsShape.getInertia();
@@ -68,11 +86,11 @@ public class PhysicsObject implements GameObject {
         }
         g.fillPolygon(xPoints, yPoints, points.size());
 
-        Vector2 springAttach = camera.worldToScreen(new Vector2(-0.5,-7.0/18.0).rotate(rotation).add(position));
+        Vector2 springEnd = camera.worldToScreen(springAttach.rotate(rotation).add(position));
         Vector2 springStart = camera.worldToScreen(new Vector2(5,8));
         g.drawLine(
-            (int)Math.floor(springAttach.x),
-            (int)Math.floor(springAttach.y),
+            (int)Math.floor(springEnd.x),
+            (int)Math.floor(springEnd.y),
             (int)Math.floor(springStart.x),
             (int)Math.floor(springStart.y)
         );
