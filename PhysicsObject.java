@@ -80,13 +80,13 @@ public class PhysicsObject implements GameObject {
         int i = -1;
         for (Vector2 point : points) {
             i++;
-            Vector2 screenPoint = camera.worldToScreen(point.rotate(rotation).add(position));
+            Vector2 screenPoint = camera.worldToScreen(localToWorld(point));
             xPoints[i] = (int)Math.floor(screenPoint.x);
             yPoints[i] = (int)Math.floor(screenPoint.y);
         }
         g.fillPolygon(xPoints, yPoints, points.size());
 
-        Vector2 springEnd = camera.worldToScreen(springAttach.rotate(rotation).add(position));
+        Vector2 springEnd = camera.worldToScreen(localToWorld(springAttach));
         Vector2 springStart = camera.worldToScreen(new Vector2(5,8));
         g.drawLine(
             (int)Math.floor(springEnd.x),
@@ -94,5 +94,10 @@ public class PhysicsObject implements GameObject {
             (int)Math.floor(springStart.x),
             (int)Math.floor(springStart.y)
         );
+    }
+
+    @Override
+    public Vector2 localToWorld(Vector2 v) {
+        return v.rotate(rotation).add(position);
     }
 }
