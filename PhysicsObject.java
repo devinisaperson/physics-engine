@@ -75,7 +75,7 @@ public class PhysicsObject implements GameObject {
         //applyContinuousForce(new Vector2(0.0,0.0), new Vector2(0,-9.8));
 
         Vector2 springPostion = new Vector2(5,8);
-        //applyContinuousForce(new Force(springAttach.rotate(rotation), (springPostion.minus(position)).scale(3)));
+        // applyContinuousForce(new Force(springAttach.rotate(rotation), (springPostion.minus(position)).scale(3)));
 
         //applyContinuousForce(new Vector2(0.0,0.0), velocity.scale(-0.1));
         alpha += omega*-0.1/physicsShape.getInertia();

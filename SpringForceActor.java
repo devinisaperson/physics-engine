@@ -9,18 +9,21 @@ public class SpringForceActor implements ForceActor {
 
     @Override
     public Force getForce(PhysicsObject physicsObject) {
+        Vector2 onLocalPosition;
         Vector2 onPosition;
         Vector2 byPosition;
         if (physicsObject == spring.startObject) {
+            onLocalPosition = spring.startPoint.rotate(physicsObject.rotation);
             onPosition = spring.getStartWorldPosition();
             byPosition = spring.getEndWorldPosition();
         } else if (physicsObject == spring.endObject) {
+            onLocalPosition = spring.endPoint.rotate(physicsObject.rotation);
             onPosition = spring.getEndWorldPosition();
             byPosition = spring.getStartWorldPosition();
         } else {
             return null;
         }
 
-        return new Force(onPosition, byPosition.minus(onPosition).scale(k));
+        return new Force(onLocalPosition, byPosition.minus(onPosition).scale(k));
     }
 }
