@@ -71,16 +71,20 @@ public class PhysicsObject implements GameObject {
 
     private void physicsUpdateSelf(double dt) {
         
+        // acceleration = Vector2.ZERO;
+        // alpha = 0;
+        // applyContinuousForce(new Force(new Vector2(0.0,0.0), new Vector2(0,-9.8)));
 
-        //applyContinuousForce(new Vector2(0.0,0.0), new Vector2(0,-9.8));
-
-        Vector2 springPostion = new Vector2(5,8);
+        // Vector2 springPostion = new Vector2(5,8);
         // applyContinuousForce(new Force(springAttach.rotate(rotation), (springPostion.minus(position)).scale(3)));
 
-        //applyContinuousForce(new Vector2(0.0,0.0), velocity.scale(-0.1));
+        // applyContinuousForce(new Force(new Vector2(0.0,0.0), velocity.scale(-0.1)));
+        
         alpha += omega*-0.1/physicsShape.getInertia();
+        
 
         velocity = velocity.add(acceleration.scale(dt));
+        
         position = position.add(velocity.scale(dt));
 
         omega += alpha * dt;
