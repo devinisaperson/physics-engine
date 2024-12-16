@@ -21,6 +21,11 @@ public class Vector2 {
         this.y = that.y;
     }
 
+    @Override
+    public String toString() {
+        return "<"+String.valueOf(x)+","+String.valueOf(y)+">";
+    }
+
     public static Vector2 add(Vector2 v, Vector2 u) {
         return new Vector2(v.x+u.x, v.y+u.y);
     }

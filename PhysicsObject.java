@@ -47,33 +47,37 @@ public class PhysicsObject implements GameObject {
         position = position.add(nudge);
     }
 
-    private void applyContinuousForce(Vector2 point, Vector2 force) {
-        acceleration = acceleration.add(force.scale(1/physicsShape.getMass()));
-        alpha += point.cross(force.scale(1/physicsShape.getInertia()));
+    private void applyContinuousForce(Force force) {
+        acceleration = acceleration.add(force.vector.scale(1/physicsShape.getMass()));
+        alpha += force.point.cross(force.vector.scale(1/physicsShape.getInertia()));
     }
 
     @Override
     public void physicsUpdate(double dt) {
-        // System.out.println(forceActors.get(0).getForce(this));
-        
+        acceleration = Vector2.ZERO;
+        alpha = 0;
+        //System.out.println(forceActors.get(0).getForce(this));
+        for (ForceActor forceActor : forceActors) {
+            applyContinuousForce(forceActor.getForce(this));
+        }
     }
 
     PhysicsObject physicsStep(double dt) {
         PhysicsObject that = new PhysicsObject(this);
         that.physicsUpdateSelf(dt);
+        System.out.println(that.alpha);
         return that;
     }
 
     private void physicsUpdateSelf(double dt) {
-        acceleration = Vector2.ZERO;
-        alpha = 0;
+        
 
-        applyContinuousForce(new Vector2(0.0,0.0), new Vector2(0,-9.8));
+        //applyContinuousForce(new Vector2(0.0,0.0), new Vector2(0,-9.8));
 
         Vector2 springPostion = new Vector2(5,8);
-        applyContinuousForce(springAttach.rotate(rotation), (springPostion.minus(position)).scale(3));
+        //applyContinuousForce(new Force(springAttach.rotate(rotation), (springPostion.minus(position)).scale(3)));
 
-        applyContinuousForce(new Vector2(0.0,0.0), velocity.scale(-0.1));
+        //applyContinuousForce(new Vector2(0.0,0.0), velocity.scale(-0.1));
         alpha += omega*-0.1/physicsShape.getInertia();
 
         velocity = velocity.add(acceleration.scale(dt));
@@ -98,6 +102,7 @@ public class PhysicsObject implements GameObject {
         }
         g.fillPolygon(xPoints, yPoints, points.size());
 
+        /*
         Vector2 springEnd = camera.worldToScreen(localToWorld(springAttach));
         Vector2 springStart = camera.worldToScreen(new Vector2(5,8));
         g.drawLine(
@@ -106,6 +111,7 @@ public class PhysicsObject implements GameObject {
             (int)Math.floor(springStart.x),
             (int)Math.floor(springStart.y)
         );
+        */
     }
 
     @Override

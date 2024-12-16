@@ -12,7 +12,7 @@ public class Spring implements GameObject {
         this.endPoint = endPoint;
         this.startObject = startObject;
         this.endObject = endObject;
-        forceActor = new SpringForceActor(this, 10);
+        forceActor = new SpringForceActor(this, 3);
     }
 
     public Vector2 getStartWorldPosition() {
@@ -25,14 +25,15 @@ public class Spring implements GameObject {
 
     @Override
     public void physicsUpdate(double dt) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'physicsUpdate'");
+        return;
     }
 
     @Override
     public void render(Graphics g, Camera camera) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'render'");
+        // System.out.print("hi");
+        Vector2 startScreenPoint = camera.worldToScreen(getStartWorldPosition());
+        Vector2 endScreenPoint = camera.worldToScreen(getEndWorldPosition());
+        g.drawLine((int)startScreenPoint.x, (int)startScreenPoint.y, (int)endScreenPoint.x, (int)endScreenPoint.y);
     }
 
     @Override
