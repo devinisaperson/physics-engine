@@ -24,7 +24,7 @@ public class Spring implements GameObject {
     }
 
     @Override
-    public GameObject physicsUpdate(double dt) {
+    public void physicsUpdate(double dt) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'physicsUpdate'");
     }

@@ -1,11 +1,13 @@
 
 import java.awt.Graphics;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.JComponent;
 
 public class Engine extends JComponent {
     private Camera camera = new Camera();
-    private Scene previousScene = null;
-    private Scene currentScene = Scene.getInitialScene();
+    private Scene scene = Scene.getInitialScene();
     // private double accumulator = 1.0;
 
     public void update(double dt) {
@@ -16,18 +18,27 @@ public class Engine extends JComponent {
             accumulator -= 1.0;
         }
         */
-        Scene nextScene = new Scene();
-        for (GameObject gameObject : currentScene.gameObjects) {
-            nextScene.gameObjects.add(gameObject.physicsUpdate(dt));
+        List<PhysicsObject> physicsObjects = new ArrayList<>(); 
+        for (GameObject gameObject : scene.gameObjects) {
+            gameObject.physicsUpdate(dt);
+            if (gameObject instanceof PhysicsObject) {
+                physicsObjects.add((PhysicsObject)gameObject);
+            }
+        }
+        
+        List<PhysicsObject> steppedPhysicsObjects = new ArrayList<>();
+        for (int i = 0; i < physicsObjects.size(); i++) {
+            steppedPhysicsObjects.add(physicsObjects.get(i).physicsStep(dt));
         }
 
-        currentScene = nextScene;
-        previousScene = currentScene;
+        for (int i = 0; i < physicsObjects.size(); i++) {
+            physicsObjects.get(i).combine(steppedPhysicsObjects.get(i));
+        }
     }
 
     @Override
     public void paintComponent(Graphics g) {
-        for (GameObject gameObject : currentScene.gameObjects) {
+        for (GameObject gameObject : scene.gameObjects) {
             gameObject.render(g, camera);
         }
     }

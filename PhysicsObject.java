@@ -13,6 +13,8 @@ public class PhysicsObject implements GameObject {
 
     Vector2 springAttach = new Vector2(-0.5,-7.0/18.0);
 
+    List<ForceActor> forceActors = new ArrayList<>();
+
     public PhysicsObject() {
         List<Vector2> points = new ArrayList<>();
         points.add(new Vector2(0,0));
@@ -33,6 +35,11 @@ public class PhysicsObject implements GameObject {
         this.rotation = that.rotation;
         this.omega = that.omega;
         this.alpha = that.alpha;
+        this.forceActors = that.forceActors;
+    }
+
+    public void addForceActor(ForceActor forceActor) {
+        forceActors.add(forceActor);
     }
 
     public void updatePivot() {
@@ -46,7 +53,12 @@ public class PhysicsObject implements GameObject {
     }
 
     @Override
-    public PhysicsObject physicsUpdate(double dt) {
+    public void physicsUpdate(double dt) {
+        // System.out.println(forceActors.get(0).getForce(this));
+        
+    }
+
+    PhysicsObject physicsStep(double dt) {
         PhysicsObject that = new PhysicsObject(this);
         that.physicsUpdateSelf(dt);
         return that;
@@ -99,5 +111,14 @@ public class PhysicsObject implements GameObject {
     @Override
     public Vector2 localToWorld(Vector2 v) {
         return v.rotate(rotation).add(position);
+    }
+
+    void combine(PhysicsObject that) {
+        this.position = new Vector2(that.position);
+        this.velocity = new Vector2(that.velocity);
+        this.acceleration = new Vector2(that.acceleration);
+        this.rotation = that.rotation;
+        this.omega = that.omega;
+        this.alpha = that.alpha;
     }
 }
