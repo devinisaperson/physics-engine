@@ -9,13 +9,5 @@ public class SceneSpring extends Scene {
         physicsObject.addForceActor(spring.forceActor);
         gameObjects.add(physicsObject);
         gameObjects.add(spring);
-
-
-        PhysicsObject physicsObject2 = new PhysicsObject();
-        Spring spring2 = new Spring(new Vector2(-0.5,-7.0/18.0), new Vector2(5,8), physicsObject2, null);
-        physicsObject2.flag = true;
-
-        gameObjects.add(physicsObject2);
-        gameObjects.add(spring2);
     }
 }
