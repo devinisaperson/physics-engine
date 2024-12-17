@@ -6,13 +6,22 @@ public class SceneSpring extends Scene {
             new PhysicsObject(),
             new PhysicsObject(),
             new PhysicsObject(),
+            new PhysicsObject(),
+            new PhysicsObject(),
+            new PhysicsObject(),
+            new PhysicsObject(),
+            new PhysicsObject(),
+            new PhysicsObject(),
+            new PhysicsObject(),
+            new PhysicsObject(),
+            new PhysicsObject(),
             new PhysicsObject()
         };
 
         for (int i = 0; i < physicsObjects.length; i++) {
             Spring spring;
             if (i == 0) {
-                spring = new Spring(new Vector2(-0.5,-7.0/18.0), new Vector2(5,12), physicsObjects[i], null);
+                spring = new Spring(new Vector2(-0.5,-7.0/18.0), new Vector2(5,15), physicsObjects[i], null);
             } else {
                 spring = new Spring(new Vector2(-0.5,-7.0/18.0), new Vector2(0.5,-7.0/18.0), physicsObjects[i], physicsObjects[i-1]);
                 physicsObjects[i-1].addForceActor(spring.forceActor);
@@ -22,6 +31,12 @@ public class SceneSpring extends Scene {
             physicsObjects[i].addForceActor(spring.forceActor);
             gameObjects.add(physicsObjects[i]);
             gameObjects.add(spring);
+
+            if (i == physicsObjects.length - 1) {
+                spring = new Spring(new Vector2(0.5,-7.0/18.0), new Vector2(20,15), physicsObjects[i], null);
+                physicsObjects[i].addForceActor(spring.forceActor);
+                gameObjects.add(spring);
+            }
         }
         
     }
