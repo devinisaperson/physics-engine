@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.Graphics;
 
 public class Spring implements GameObject {
@@ -12,7 +13,7 @@ public class Spring implements GameObject {
         this.endPoint = endPoint;
         this.startObject = startObject;
         this.endObject = endObject;
-        forceActor = new SpringForceActor(this, 3);
+        forceActor = new SpringForceActor(this, 10, 4);
     }
 
     public Vector2 getStartWorldPosition() {
@@ -33,6 +34,7 @@ public class Spring implements GameObject {
         // System.out.print("hi");
         Vector2 startScreenPoint = camera.worldToScreen(getStartWorldPosition());
         Vector2 endScreenPoint = camera.worldToScreen(getEndWorldPosition());
+        g.setColor(new Color(0x000000));
         g.drawLine((int)startScreenPoint.x, (int)startScreenPoint.y, (int)endScreenPoint.x, (int)endScreenPoint.y);
     }
 

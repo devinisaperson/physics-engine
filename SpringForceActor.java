@@ -1,10 +1,12 @@
 public class SpringForceActor implements ForceActor {
     Spring spring;
     double k;
+    double restLength;
 
-    public SpringForceActor(Spring spring, double k) {
+    public SpringForceActor(Spring spring, double k, double restLength) {
         this.spring = spring;
         this.k = k;
+        this.restLength = restLength;
     }
 
     @Override
@@ -23,7 +25,7 @@ public class SpringForceActor implements ForceActor {
         } else {
             return null;
         }
-
+        byPosition = byPosition.minus(byPosition.minus(onPosition).normalize().scale(restLength));
         return new Force(onLocalPosition, byPosition.minus(onPosition).scale(k));
     }
 }
