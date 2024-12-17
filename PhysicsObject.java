@@ -5,7 +5,7 @@ import java.util.List;
 
 public class PhysicsObject implements GameObject {
     PhysicsPolygon physicsShape;
-    Vector2 position = new Vector2(5,5);
+    Vector2 position = new Vector2(5,12);
     Vector2 velocity = new Vector2(0,0);
     Vector2 acceleration = new Vector2(0,0);
     double rotation = 0;
