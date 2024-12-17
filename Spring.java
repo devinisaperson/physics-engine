@@ -13,7 +13,7 @@ public class Spring implements GameObject {
         this.endPoint = endPoint;
         this.startObject = startObject;
         this.endObject = endObject;
-        forceActor = new SpringForceActor(this, 10, 4);
+        forceActor = new SpringForceActor(this, 10, 2);
     }
 
     public Vector2 getStartWorldPosition() {
