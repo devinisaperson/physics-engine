@@ -6,4 +6,9 @@ public class Force {
         this.point = point;
         this.vector = vector;
     }
+
+    @Override
+    public String toString() {
+        return "point: " + point + " vector: " + vector;
+    }
 }

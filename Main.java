@@ -32,10 +32,11 @@ public class Main {
 
                 accumulator += frameTime;
 
-                while (accumulator >= physicsStepLength) {
-                    engine.update(physicsStepLength);
-                    accumulator -= physicsStepLength;
-                }
+                // while (accumulator >= physicsStepLength) {
+                //     engine.update(physicsStepLength);
+                //     accumulator -= physicsStepLength;
+                // }
+                engine.update(physicsStepLength);
                 frame.repaint();
                 Thread.sleep((long)(1000.0/maxFPS - frameTime));
             }

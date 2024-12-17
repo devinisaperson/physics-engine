@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +11,8 @@ public class PhysicsObject implements GameObject {
     double rotation = 0;
     double omega = 0.0;
     double alpha = 0.0;
+
+    boolean flag = false;
 
     Vector2 springAttach = new Vector2(-0.5,-7.0/18.0);
 
@@ -36,6 +39,7 @@ public class PhysicsObject implements GameObject {
         this.omega = that.omega;
         this.alpha = that.alpha;
         this.forceActors = that.forceActors;
+        this.flag = that.flag;
     }
 
     public void addForceActor(ForceActor forceActor) {
@@ -54,10 +58,15 @@ public class PhysicsObject implements GameObject {
 
     @Override
     public void physicsUpdate(double dt) {
+        if (flag) {
+            return;
+        }
         acceleration = Vector2.ZERO;
         alpha = 0;
         //System.out.println(forceActors.get(0).getForce(this));
+        System.out.println(flag);
         for (ForceActor forceActor : forceActors) {
+            System.out.println(forceActor.getClass() + " " + forceActor.getForce(this).toString());
             applyContinuousForce(forceActor.getForce(this));
         }
     }
@@ -65,30 +74,35 @@ public class PhysicsObject implements GameObject {
     PhysicsObject physicsStep(double dt) {
         PhysicsObject that = new PhysicsObject(this);
         that.physicsUpdateSelf(dt);
-        System.out.println(that.alpha);
+        //System.out.println(that.alpha);
         return that;
     }
 
     private void physicsUpdateSelf(double dt) {
         
-        // acceleration = Vector2.ZERO;
-        // alpha = 0;
-        // applyContinuousForce(new Force(new Vector2(0.0,0.0), new Vector2(0,-9.8)));
+        if (flag) {
+            acceleration = Vector2.ZERO;
+            alpha = 0;
+            applyContinuousForce(new Force(new Vector2(0.0,0.0), new Vector2(0,-9.8)));
+    
+            Vector2 springPostion = new Vector2(5,8);
+            System.out.println(flag);
+            System.out.println("spring:: " + new Force(springAttach.rotate(rotation), (springPostion.minus(position)).scale(3)));
+            applyContinuousForce(new Force(springAttach.rotate(rotation), (springPostion.minus(position)).scale(3)));
+    
+            applyContinuousForce(new Force(new Vector2(0.0,0.0), velocity.scale(-0.1)));
+            System.out.println("damping:: " + new Force(new Vector2(0.0,0.0), velocity.scale(-0.1)));
+        }
 
-        // Vector2 springPostion = new Vector2(5,8);
-        // applyContinuousForce(new Force(springAttach.rotate(rotation), (springPostion.minus(position)).scale(3)));
-
-        // applyContinuousForce(new Force(new Vector2(0.0,0.0), velocity.scale(-0.1)));
-        
-        alpha += omega*-0.1/physicsShape.getInertia();
-        
+        //alpha += omega*-0.1/physicsShape.getInertia();
+        //System.out.println()
 
         velocity = velocity.add(acceleration.scale(dt));
         
         position = position.add(velocity.scale(dt));
 
-        omega += alpha * dt;
-        rotation += omega * dt;
+        // omega += alpha * dt;
+        // rotation += omega * dt;
     }
 
     @Override
@@ -104,7 +118,11 @@ public class PhysicsObject implements GameObject {
             xPoints[i] = (int)Math.floor(screenPoint.x);
             yPoints[i] = (int)Math.floor(screenPoint.y);
         }
+        if (flag) {
+            g.setColor(new Color(0x00ffff));
+        }
         g.fillPolygon(xPoints, yPoints, points.size());
+        g.setColor(new Color(0x000000));
 
         /*
         Vector2 springEnd = camera.worldToScreen(localToWorld(springAttach));
