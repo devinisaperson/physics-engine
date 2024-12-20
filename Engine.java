@@ -25,22 +25,58 @@ public class Engine extends JComponent {
             }
         }
         
-        List<PhysicsObject> steppedPhysicsObjects = new ArrayList<>();
-        for (int i = 0; i < physicsObjects.size(); i++) {
-            steppedPhysicsObjects.add(physicsObjects.get(i).physicsStep(dt));
-        }
+        
+        List<Double> times = new ArrayList<Double>();
+        List<List<PhysicsObject>> objectsAtTime = new ArrayList<>();
 
-        for (int i = 0; i < steppedPhysicsObjects.size(); i++) {
-            for (int j = i+1; j < steppedPhysicsObjects.size(); j++) {
-                if (PhysicsObject.colliding(steppedPhysicsObjects.get(i), steppedPhysicsObjects.get(j))) {
-                    PhysicsObject.resolveCollision(steppedPhysicsObjects.get(i), steppedPhysicsObjects.get(j));
+        List<PhysicsObject> steppedPhysicsObjects = getSteppedPhysicsObjects(physicsObjects, dt);
+        times.add(dt);
+        objectsAtTime.add(steppedPhysicsObjects);
+        int simTimeIndex = 0;
+
+        do {
+            for (int i = 0; i < objectsAtTime.get(simTimeIndex).size(); i++) {
+                for (int j = i+1; j < objectsAtTime.get(simTimeIndex).size(); j++) {
+                    if (PhysicsObject.colliding(objectsAtTime.get(simTimeIndex).get(i), objectsAtTime.get(simTimeIndex).get(j))) {
+                        if (!PhysicsObject.colliding(physicsObjects.get(i), physicsObjects.get(j))) {
+                            System.out.println(findCollisionTime(physicsObjects.get(i), physicsObjects.get(j), dt, 0.0001));
+                        }
+                        PhysicsObject.resolveCollision(objectsAtTime.get(simTimeIndex).get(i), objectsAtTime.get(simTimeIndex).get(j));
+                    }
                 }
             }
-        }
-
+        } while (simTimeIndex < times.size()-1);
+        
         for (int i = 0; i < physicsObjects.size(); i++) {
             physicsObjects.get(i).combine(steppedPhysicsObjects.get(i));
         }
+    }
+
+    private double findCollisionTime(PhysicsObject physicsObject0, PhysicsObject physicsObject1, double maxTime, double timeEpsilon) {
+        // .5^x * maxTime <= timeEpsilon
+        // .5^x <= timeEpsilon/maxTime
+        // x <= log_1/2 (timeEpsilon/maxTime)
+        // x <= -log_2 timeEpsilon/maxTime
+        // x <= -(log(timeEpsilon/maxTime) / log(2))
+        double low = 0;
+        double high = maxTime;
+        for (int i = 0; i <= -Math.log(timeEpsilon/maxTime) / Math.log(2); i++) {
+            double middle = (low + high)/2;
+            if (PhysicsObject.colliding(physicsObject0.physicsStep(middle), physicsObject1.physicsStep(middle))) {
+                high = middle;
+            } else {
+                low = middle;
+            }
+        }
+        return low;
+    }
+    
+    private ArrayList<PhysicsObject> getSteppedPhysicsObjects(List<PhysicsObject> physicsObjects, double dt) {
+        ArrayList<PhysicsObject> steppedPhysicsObjects = new ArrayList<>();
+        for (int i = 0; i < physicsObjects.size(); i++) {
+            steppedPhysicsObjects.add(physicsObjects.get(i).physicsStep(dt));
+        }
+        return steppedPhysicsObjects;
     }
 
     @Override

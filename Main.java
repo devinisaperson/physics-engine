@@ -35,6 +35,7 @@ public class Main {
                 while (accumulator >= physicsStepLength) {
                     engine.update(physicsStepLength);
                     accumulator -= physicsStepLength;
+                    //accumulator = 0;
                 }
                 frame.repaint();
                 Thread.sleep((long)(1000.0/maxFPS - frameTime));
