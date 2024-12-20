@@ -39,6 +39,8 @@ public class PhysicsObject implements GameObject {
         this.omega = that.omega;
         this.alpha = that.alpha;
         this.forceActors = that.forceActors;
+
+        this.color = that.color;
     }
 
     public void addForceActor(ForceActor forceActor) {

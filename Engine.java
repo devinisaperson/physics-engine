@@ -1,7 +1,9 @@
 
 import java.awt.Graphics;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.PriorityQueue;
 import javax.swing.JComponent;
 
 public class Engine extends JComponent {
@@ -26,26 +28,63 @@ public class Engine extends JComponent {
         }
         
         
-        List<Double> times = new ArrayList<Double>();
-        List<List<PhysicsObject>> objectsAtTime = new ArrayList<>();
+        // List<Double> times = new ArrayList<Double>();
+        // List<List<PhysicsObject>> objectsAtTime = new ArrayList<>();
 
         List<PhysicsObject> steppedPhysicsObjects = getSteppedPhysicsObjects(physicsObjects, dt);
-        times.add(dt);
-        objectsAtTime.add(steppedPhysicsObjects);
-        int simTimeIndex = 0;
+        // times.add(dt);
+        // objectsAtTime.add(steppedPhysicsObjects);
+        // int simTimeIndex = 0;
+
+        class Collision {
+            double time;
+            int lower;
+            int higher;
+
+            Collision(double time, int lower, int higher) {
+                this.time = time;
+                this.lower = lower;
+                this.higher = higher;
+            }
+        }
+
+        class sortByTime implements Comparator<Collision> {
+            @Override
+            public int compare(Collision a, Collision b)
+            {
+                return (int)Math.signum(a.time - b.time);
+            }
+        }
+
+        // it's 4:22 am, I do not know what the correct data structures are to keep track of this stuff
+        // it's probably best done with just arraylists or something
+        // oh well
+        PriorityQueue<Collision> collisionQueue = new PriorityQueue<>(5, new sortByTime());
+        boolean[][] collisionDected = new boolean[steppedPhysicsObjects.size()-1][steppedPhysicsObjects.size()];
 
         do {
-            for (int i = 0; i < objectsAtTime.get(simTimeIndex).size(); i++) {
-                for (int j = i+1; j < objectsAtTime.get(simTimeIndex).size(); j++) {
-                    if (PhysicsObject.colliding(objectsAtTime.get(simTimeIndex).get(i), objectsAtTime.get(simTimeIndex).get(j))) {
-                        if (!PhysicsObject.colliding(physicsObjects.get(i), physicsObjects.get(j))) {
-                            System.out.println(findCollisionTime(physicsObjects.get(i), physicsObjects.get(j), dt, 0.0001));
-                        }
-                        PhysicsObject.resolveCollision(objectsAtTime.get(simTimeIndex).get(i), objectsAtTime.get(simTimeIndex).get(j));
+            if (collisionQueue.peek() != null) {
+                Collision collision = collisionQueue.poll();
+                PhysicsObject lowerAtCollision = physicsObjects.get(collision.lower).physicsStep(collision.time);
+                PhysicsObject higherAtCollision = physicsObjects.get(collision.higher).physicsStep(collision.time);
+                PhysicsObject.resolveCollision(lowerAtCollision, higherAtCollision);
+                steppedPhysicsObjects.get(collision.lower).combine(lowerAtCollision.physicsStep(dt - collision.time));
+                steppedPhysicsObjects.get(collision.higher).combine(higherAtCollision.physicsStep(dt - collision.time));
+            }
+
+            for (int i = 0; i < steppedPhysicsObjects.size()-1; i++) {
+                for (int j = i+1; j < steppedPhysicsObjects.size(); j++) {
+
+                    boolean currentlyColliding = PhysicsObject.colliding(steppedPhysicsObjects.get(i), steppedPhysicsObjects.get(j));
+                    boolean previouslyColliding = PhysicsObject.colliding(physicsObjects.get(i), physicsObjects.get(j));
+                    if (!collisionDected[i][j] && currentlyColliding && !previouslyColliding) {
+                        double collisionTime = findCollisionTime(physicsObjects.get(i), physicsObjects.get(j), dt, 0.0001);
+                        collisionQueue.add(new Collision(collisionTime, i, j));
+                        collisionDected[i][j] = true;
                     }
                 }
             }
-        } while (simTimeIndex < times.size()-1);
+        } while (!collisionQueue.isEmpty());
         
         for (int i = 0; i < physicsObjects.size(); i++) {
             physicsObjects.get(i).combine(steppedPhysicsObjects.get(i));
