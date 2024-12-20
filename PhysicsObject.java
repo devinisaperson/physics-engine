@@ -105,7 +105,7 @@ public class PhysicsObject implements GameObject {
         g.setColor(color);
         g.fillPolygon(xPoints, yPoints, points.size());
 
-        //color = new Color(0x000000);
+        color = new Color(0x000000);
     }
 
     @Override
