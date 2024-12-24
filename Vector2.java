@@ -46,11 +46,21 @@ public class Vector2 {
         return v.x*u.y-v.y*u.x;
     }
 
+    public static double comp(Vector2 v, Vector2 u) {
+        return v.dot(u) / v.magnitude();
+    }
+
+    public static Vector2 proj(Vector2 v, Vector2 u) {
+        return v.normalize().scale(v.comp(u));
+    }
+
     public Vector2 add(Vector2 that) {return Vector2.add(this, that);}
     public Vector2 minus(Vector2 that) {return Vector2.minus(this, that);}
     public Vector2 hadamard(Vector2 that) {return Vector2.hadamard(this, that);}
     public double dot(Vector2 that) {return Vector2.dot(this, that);}
     public double cross(Vector2 that) {return Vector2.cross(this, that);}
+    public double comp(Vector2 that) {return Vector2.comp(this, that);}
+    public Vector2 proj(Vector2 that) {return Vector2.proj(this, that);}
 
     public Vector2 scale(double k) {
         return new Vector2(this.x*k, this.y*k);
@@ -69,5 +79,9 @@ public class Vector2 {
     public Vector2 normalize() {
         double theta = Math.atan2(y, x);
         return new Vector2(Math.cos(theta), Math.sin(theta));
+    }
+
+    public Vector2 normal() {
+        return new Vector2(y, -x);
     }
 }

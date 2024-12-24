@@ -4,7 +4,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Scene {
     public static Scene getInitialScene() {
-        return new SceneSpring();
+        return new SimpleScene();
     }
 
     List<GameObject> gameObjects = new CopyOnWriteArrayList<>();

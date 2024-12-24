@@ -113,6 +113,15 @@ public class PhysicsObject implements GameObject {
         return v.rotate(rotation).add(position);
     }
 
+    public ArrayList<Vector2> getPointsWorld() {
+        List<Vector2> pointsLocal = physicsShape.getPoints();
+        ArrayList<Vector2> pointsWorld = new ArrayList<>();
+        for (Vector2 point : pointsLocal) {
+            pointsWorld.add(localToWorld(point));
+        }
+        return pointsWorld;
+    }
+
     void combine(PhysicsObject that) {
         this.position = new Vector2(that.position);
         this.velocity = new Vector2(that.velocity);
@@ -154,7 +163,7 @@ public class PhysicsObject implements GameObject {
     // and 'p2q2' intersect.
     private static boolean doIntersect(LineSegment s1, LineSegment s2)
     {
-        Vector2 p1 = s1.left, q1 = s1.right, p2 = s2.left, q2 = s2.right;
+        Vector2 p1 = s1.first, q1 = s1.second, p2 = s2.first, q2 = s2.second;
     
         // Find the four orientations needed for general and
         // special cases
@@ -182,63 +191,141 @@ public class PhysicsObject implements GameObject {
     
         return false; // Doesn't fall in any of the above cases
     }
-    public static boolean colliding(PhysicsObject physicsObject0, PhysicsObject physicsObject1) {
+
+    public static ArrayList<ArrayList<Vector2>> collidingPoints(PhysicsObject physicsObject0, PhysicsObject physicsObject1) {
+        
+
         List<LineSegment> segmentList0 = new ArrayList<>();
-        List<Vector2> pointList0 = physicsObject0.physicsShape.getPoints();
+        List<Vector2> pointList0 = physicsObject0.getPointsWorld();
         for (int i = 0; i < pointList0.size(); i++) {
             segmentList0.add(new LineSegment(
-                physicsObject0.localToWorld(pointList0.get(i)),
-                physicsObject0.localToWorld(pointList0.get((i+1)%pointList0.size())),
-                0
+                pointList0.get(i),
+                pointList0.get((i+1)%pointList0.size())
                 ));
         }
 
+        boolean[] prefix0 = new boolean[pointList0.size()];
+
         List<LineSegment> segmentList1 = new ArrayList<>();
-        List<Vector2> pointList1 = physicsObject1.physicsShape.getPoints();
+        List<Vector2> pointList1 = physicsObject1.getPointsWorld();
         for (int i = 0; i < pointList1.size(); i++) {
             segmentList1.add(new LineSegment(
-                physicsObject1.localToWorld(pointList0.get(i)),
-                physicsObject1.localToWorld(pointList0.get((i+1)%pointList1.size())),
-                1
+                pointList1.get(i),
+                pointList1.get((i+1)%pointList1.size())
                 ));
         }
-        
-        for (LineSegment segment0 : segmentList0) {
-            for (LineSegment segment1 : segmentList1) {
-                if (doIntersect(segment0, segment1)) {
-                    return true;
+
+        boolean[] prefix1 = new boolean[pointList1.size()];
+
+        for (int i = 0; i < segmentList0.size(); i++) {
+            for (int j = 0; j < segmentList1.size(); j++) {
+                if (doIntersect(segmentList0.get(i), segmentList1.get(i))) {
+                    prefix0[i] ^= true;
+                    prefix1[j] ^= true;
+                    //return true;
                 }
             }
         }
 
-        return false;
+        ArrayList<ArrayList<Vector2>> collidingPoints = new ArrayList<>();
+        collidingPoints.add(new ArrayList<>());
+        collidingPoints.add(new ArrayList<>());
+        boolean is0in = physicsObject1.inside(pointList0.get(0));
+        boolean is1in = physicsObject0.inside(pointList1.get(1));
+
+        for (int i = 0; i < pointList0.size(); i++) {
+            if (is0in) {
+                System.out.println(pointList0.get(i));
+                collidingPoints.get(0).add(pointList0.get(i));
+            }
+            //already inside? swap? result
+            //true false true
+            //false false false
+            //true true false
+            //false true true
+            is0in = is0in ^ prefix0[i];
+        }
+
+        for (int i = 0; i < pointList1.size()-1; i++) {
+            if (is1in) {
+                collidingPoints.get(1).add(pointList1.get(i));
+            }
+            is1in = is1in ^ prefix1[i];
+        }
+
+        return collidingPoints;
+    }
+
+    public double distanceToSegement(Vector2 point, LineSegment segment) {
+        Vector2 slope = segment.second.minus(segment.first);
+        Vector2 normal = slope.normal().normalize();
+        Vector2 pointRelative = point.minus(segment.first);
+        return Vector2.comp(normal, pointRelative);
+    }
+
+    public boolean inside(Vector2 point) {
+        boolean result = true;
+        double epsilon = 0.1;
+        double leftmost = point.x;
+        List<Vector2> pointList = getPointsWorld();
+        for (int i = 0; i < pointList.size(); i++) {
+            leftmost = Math.min(leftmost, pointList.get(i).x);
+
+            LineSegment ray = new LineSegment(new Vector2(leftmost-epsilon, point.y), point);
+            LineSegment segment = new LineSegment(pointList.get(i), pointList.get((i+1)%pointList.size()));
+
+            if (doIntersect(ray, segment)) {
+                result = !result;
+            }
+        }
+        
+        return result;
     }
 
     public static void resolveCollision(PhysicsObject physicsObject0, PhysicsObject physicsObject1) {
+        // System.out.println(physicsObject0);
+        // System.out.println(physicsObject1);
         physicsObject0.color = new Color(0x00ffff);
         physicsObject1.color = new Color(0x00ffff);
     }
 
-    private static class LineSegment implements Comparable<LineSegment>{
-        Vector2 left;
-        Vector2 right;
-        int layer;
+    private static class LineSegment /*implements Comparable<LineSegment>*/{
+        Vector2 first;
+        Vector2 second;
 
-        public LineSegment(Vector2 v, Vector2 u, int layer) {
-            if (v.x <= u.x) {
-                left = v;
-                right = u;
-            } else {
-                left = u;
-                right = v;
-            }
-            this.layer = layer;
+        public LineSegment(Vector2 v, Vector2 u) {
+            this.first = v;
+            this.second = u;
+            
+            // if (v.x <= u.x) {
+            //     left = v;
+            //     right = u;
+            // } else {
+            //     left = u;
+            //     right = v;
+            // }
         }
+
+        // public Vector2 getLeft() {
+        //     if (first.x <= second.x) {
+        //         return first;
+        //     } else {
+        //         return second;
+        //     }
+        // }
+
+        // public Vector2 getRight() {
+        //     if (first.x <= second.x) {
+        //         return second;
+        //     } else {
+        //         return first;
+        //     }
+        // }
         
-        @Override
-        public int compareTo(LineSegment that) {
-            return (int)Math.signum(this.left.x - that.left.x);
-        }
+        // @Override
+        // public int compareTo(LineSegment that) {
+        //     return (int)Math.signum(this.left.x - that.left.x);
+        // }
     }
     
 }

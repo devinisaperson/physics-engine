@@ -75,8 +75,12 @@ public class Engine extends JComponent {
             for (int i = 0; i < steppedPhysicsObjects.size()-1; i++) {
                 for (int j = i+1; j < steppedPhysicsObjects.size(); j++) {
 
-                    boolean currentlyColliding = PhysicsObject.colliding(steppedPhysicsObjects.get(i), steppedPhysicsObjects.get(j));
-                    boolean previouslyColliding = PhysicsObject.colliding(physicsObjects.get(i), physicsObjects.get(j));
+                    ArrayList<ArrayList<Vector2>> currentCollidingPoints = PhysicsObject.collidingPoints(steppedPhysicsObjects.get(i), steppedPhysicsObjects.get(j));
+                    ArrayList<ArrayList<Vector2>> previousCollidingPoints = PhysicsObject.collidingPoints(physicsObjects.get(i), physicsObjects.get(j));
+
+                    boolean currentlyColliding = currentCollidingPoints.get(0).size() > 0 || currentCollidingPoints.get(1).size() > 0;
+                    boolean previouslyColliding = previousCollidingPoints.get(0).size() > 0 || previousCollidingPoints.get(1).size() > 0;
+
                     if (!collisionDected[i][j] && currentlyColliding && !previouslyColliding) {
                         double collisionTime = findCollisionTime(physicsObjects.get(i), physicsObjects.get(j), dt, 0.0001);
                         collisionQueue.add(new Collision(collisionTime, i, j));
@@ -101,7 +105,8 @@ public class Engine extends JComponent {
         double high = maxTime;
         for (int i = 0; i <= -Math.log(timeEpsilon/maxTime) / Math.log(2); i++) {
             double middle = (low + high)/2;
-            if (PhysicsObject.colliding(physicsObject0.physicsStep(middle), physicsObject1.physicsStep(middle))) {
+            ArrayList<ArrayList<Vector2>> collidingPoints = PhysicsObject.collidingPoints(physicsObject0.physicsStep(middle), physicsObject1.physicsStep(middle));
+            if (collidingPoints.get(0).size() > 0 || collidingPoints.get(1).size() > 0) {
                 high = middle;
             } else {
                 low = middle;
