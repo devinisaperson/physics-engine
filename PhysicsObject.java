@@ -219,7 +219,7 @@ public class PhysicsObject implements GameObject {
 
         for (int i = 0; i < segmentList0.size(); i++) {
             for (int j = 0; j < segmentList1.size(); j++) {
-                if (doIntersect(segmentList0.get(i), segmentList1.get(i))) {
+                if (doIntersect(segmentList0.get(i), segmentList1.get(j))) {
                     prefix0[i] ^= true;
                     prefix1[j] ^= true;
                     //return true;
@@ -235,7 +235,7 @@ public class PhysicsObject implements GameObject {
 
         for (int i = 0; i < pointList0.size(); i++) {
             if (is0in) {
-                System.out.println(pointList0.get(i));
+                //System.out.println(pointList0.get(i));
                 collidingPoints.get(0).add(pointList0.get(i));
             }
             //already inside? swap? result
@@ -246,8 +246,9 @@ public class PhysicsObject implements GameObject {
             is0in = is0in ^ prefix0[i];
         }
 
-        for (int i = 0; i < pointList1.size()-1; i++) {
+        for (int i = 0; i < pointList1.size(); i++) {
             if (is1in) {
+                //System.out.println(pointList1.get(i));
                 collidingPoints.get(1).add(pointList1.get(i));
             }
             is1in = is1in ^ prefix1[i];
@@ -264,7 +265,7 @@ public class PhysicsObject implements GameObject {
     }
 
     public boolean inside(Vector2 point) {
-        boolean result = true;
+        boolean result = false;
         double epsilon = 0.1;
         double leftmost = point.x;
         List<Vector2> pointList = getPointsWorld();
@@ -283,8 +284,8 @@ public class PhysicsObject implements GameObject {
     }
 
     public static void resolveCollision(PhysicsObject physicsObject0, PhysicsObject physicsObject1) {
-        // System.out.println(physicsObject0);
-        // System.out.println(physicsObject1);
+        System.out.println(physicsObject0);
+        System.out.println(physicsObject1);
         physicsObject0.color = new Color(0x00ffff);
         physicsObject1.color = new Color(0x00ffff);
     }
