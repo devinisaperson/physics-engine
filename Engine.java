@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
+
 import javax.swing.JComponent;
 
 public class Engine extends JComponent {
     private Camera camera = new Camera();
     private Scene scene = Scene.getInitialScene();
+    private ArrayList<GameObject> waitToAdd = new ArrayList<>();
+
     // private double accumulator = 1.0;
 
     public void update(double dt) {
@@ -82,6 +85,12 @@ public class Engine extends JComponent {
                     boolean previouslyColliding = previousCollidingPoints.get(0).size() > 0 || previousCollidingPoints.get(1).size() > 0;
 
                     if (!collisionDected[i][j] && currentlyColliding && !previouslyColliding) {
+                        for (Vector2 point : currentCollidingPoints.get(0)) {
+                            waitToAdd.add(new Marker(point));
+                        }
+                        for (Vector2 point : currentCollidingPoints.get(1)) {
+                            waitToAdd.add(new Marker(point));
+                        }
                         double collisionTime = findCollisionTime(physicsObjects.get(i), physicsObjects.get(j), dt, 0.0001);
                         collisionQueue.add(new Collision(collisionTime, i, j));
                         collisionDected[i][j] = true;
@@ -93,6 +102,9 @@ public class Engine extends JComponent {
         for (int i = 0; i < physicsObjects.size(); i++) {
             physicsObjects.get(i).combine(steppedPhysicsObjects.get(i));
         }
+
+        scene.gameObjects.addAll(waitToAdd);
+        waitToAdd = new ArrayList<>();
     }
 
     private double findCollisionTime(PhysicsObject physicsObject0, PhysicsObject physicsObject1, double maxTime, double timeEpsilon) {
