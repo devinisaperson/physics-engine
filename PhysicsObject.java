@@ -30,6 +30,14 @@ public class PhysicsObject implements GameObject {
         updatePivot();
     }
 
+    public PhysicsObject(Vector2 position, Vector2 velocity, double rotation, double omega) {
+        this();
+        this.position = position;
+        this.velocity = velocity;
+        this.rotation = rotation;
+        this.omega = omega;
+    }
+
     public PhysicsObject(PhysicsObject that) {
         this.physicsShape = new PhysicsPolygon(that.physicsShape);
         this.position = new Vector2(that.position);
@@ -106,6 +114,10 @@ public class PhysicsObject implements GameObject {
         g.fillPolygon(xPoints, yPoints, points.size());
 
         color = new Color(0x000000);
+
+        System.out.println(this);
+        System.out.println(position);
+        System.out.println(rotation);
     }
 
     @Override
@@ -231,7 +243,7 @@ public class PhysicsObject implements GameObject {
         collidingPoints.add(new ArrayList<>());
         collidingPoints.add(new ArrayList<>());
         boolean is0in = physicsObject1.inside(pointList0.get(0));
-        boolean is1in = physicsObject0.inside(pointList1.get(1));
+        boolean is1in = physicsObject0.inside(pointList1.get(0)); //wtf why is this 1?
 
         for (int i = 0; i < pointList0.size(); i++) {
             if (is0in) {
@@ -267,10 +279,10 @@ public class PhysicsObject implements GameObject {
     public boolean inside(Vector2 point) {
         boolean result = false;
         double epsilon = 0.1;
-        double leftmost = point.x;
         List<Vector2> pointList = getPointsWorld();
+        double leftmost = Math.min(point.x, pointList.get(0).x);
         for (int i = 0; i < pointList.size(); i++) {
-            leftmost = Math.min(leftmost, pointList.get(i).x);
+            leftmost = Math.min(leftmost, pointList.get((i+1)%pointList.size()).x);
 
             LineSegment ray = new LineSegment(new Vector2(leftmost-epsilon, point.y), point);
             LineSegment segment = new LineSegment(pointList.get(i), pointList.get((i+1)%pointList.size()));
@@ -284,8 +296,8 @@ public class PhysicsObject implements GameObject {
     }
 
     public static void resolveCollision(PhysicsObject physicsObject0, PhysicsObject physicsObject1) {
-        System.out.println(physicsObject0);
-        System.out.println(physicsObject1);
+        // System.out.println(physicsObject0);
+        // System.out.println(physicsObject1);
         physicsObject0.color = new Color(0x00ffff);
         physicsObject1.color = new Color(0x00ffff);
     }

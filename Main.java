@@ -4,9 +4,10 @@ import javax.swing.JFrame;
 
 public class Main {
     public static void main(String[] args) throws InterruptedException {
+        int frameCount = 0;
         JFrame frame = new JFrame();
 
-        frame.setSize(1280, 720);
+        frame.setSize(1280, 1280);
         frame.setTitle("Game");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setIgnoreRepaint(true);
@@ -23,6 +24,9 @@ public class Main {
 
         frame.setVisible(true);
         try {
+            for (int i = 0; i < 53; i++) {
+                engine.update(physicsStepLength);
+            }
             while (true) {
                 double newTime = currentTimeMillis()/1000.0;
                 double frameTime = newTime - currentTime;
@@ -35,9 +39,10 @@ public class Main {
                 while (accumulator >= physicsStepLength) {
                     engine.update(physicsStepLength);
                     accumulator -= physicsStepLength;
-                    accumulator = 0; // one physics step per frame good for debugging
+                    //accumulator = 0; // one physics step per frame good for debugging
                 }
                 frame.repaint();
+                frameCount++;
                 Thread.sleep((long)(1000.0/maxFPS - frameTime));
             }
         } catch (Exception e) {

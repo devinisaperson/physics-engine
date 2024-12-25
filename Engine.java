@@ -77,6 +77,9 @@ public class Engine extends JComponent {
 
             for (int i = 0; i < steppedPhysicsObjects.size()-1; i++) {
                 for (int j = i+1; j < steppedPhysicsObjects.size(); j++) {
+                    if (i == 10) {
+                        int asdf=1;
+                    }
 
                     ArrayList<ArrayList<Vector2>> currentCollidingPoints = PhysicsObject.collidingPoints(steppedPhysicsObjects.get(i), steppedPhysicsObjects.get(j));
                     ArrayList<ArrayList<Vector2>> previousCollidingPoints = PhysicsObject.collidingPoints(physicsObjects.get(i), physicsObjects.get(j));
@@ -86,11 +89,17 @@ public class Engine extends JComponent {
 
                     if (!collisionDected[i][j] && currentlyColliding && !previouslyColliding) {
                         for (Vector2 point : currentCollidingPoints.get(0)) {
+                            System.out.print(i);
+                            System.out.print(" ");
                             waitToAdd.add(new Marker(point));
                         }
+                        System.out.println();
                         for (Vector2 point : currentCollidingPoints.get(1)) {
+                            System.out.print(j);
+                            System.out.print(" ");
                             waitToAdd.add(new Marker(point));
                         }
+                        System.out.println();
                         double collisionTime = findCollisionTime(physicsObjects.get(i), physicsObjects.get(j), dt, 0.0001);
                         collisionQueue.add(new Collision(collisionTime, i, j));
                         collisionDected[i][j] = true;

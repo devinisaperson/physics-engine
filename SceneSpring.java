@@ -40,6 +40,6 @@ public class SceneSpring extends Scene {
             }
         }
         
-        super.gameObjects.add(new Marker(new Vector2(1,1)));
+        // super.gameObjects.add(new Marker(new Vector2(1,1)));
     }
 }
