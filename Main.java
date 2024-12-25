@@ -16,7 +16,7 @@ public class Main {
 
         double physicsStepLength = 0.01;
         
-        double currentTime = currentTimeMillis()/1000.0;
+        double currentTime = millisToSeconds(currentTimeMillis());
         double accumulator = 0.0;
 
         // note, the program *will* take up 20% of your CPU if you don't have this at a reasonable value
@@ -24,11 +24,11 @@ public class Main {
 
         frame.setVisible(true);
         try {
-            for (int i = 0; i < 53; i++) {
+            for (int i = 0; i < 0; i++) {
                 engine.update(physicsStepLength);
             }
             while (true) {
-                double newTime = currentTimeMillis()/1000.0;
+                double newTime = millisToSeconds(currentTimeMillis());
                 double frameTime = newTime - currentTime;
                 if ( frameTime > 0.25 )
                     frameTime = 0.25;
@@ -48,5 +48,9 @@ public class Main {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    public static double millisToSeconds(long time) {
+        return time/5000.0;
     }
 }

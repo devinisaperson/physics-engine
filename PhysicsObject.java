@@ -115,9 +115,9 @@ public class PhysicsObject implements GameObject {
 
         color = new Color(0x000000);
 
-        System.out.println(this);
-        System.out.println(position);
-        System.out.println(rotation);
+        // System.out.println(this);
+        // System.out.println(position);
+        // System.out.println(rotation);
     }
 
     @Override
