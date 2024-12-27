@@ -51,6 +51,6 @@ public class Main {
     }
 
     public static double millisToSeconds(long time) {
-        return time/5000.0;
+        return time/1000.0;
     }
 }

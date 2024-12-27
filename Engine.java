@@ -31,13 +31,14 @@ public class Engine extends JComponent {
         }
         
         
-        // List<Double> times = new ArrayList<Double>();
-        // List<List<PhysicsObject>> objectsAtTime = new ArrayList<>();
+        List<TimestampedPhysicsObject> midPhysicsObjects = new ArrayList<>();
+        List<PhysicsObject> finalPhysicsObjects = new ArrayList<>();
 
-        List<PhysicsObject> steppedPhysicsObjects = getSteppedPhysicsObjects(physicsObjects, dt);
-        // times.add(dt);
-        // objectsAtTime.add(steppedPhysicsObjects);
-        // int simTimeIndex = 0;
+        for (int i = 0; i < physicsObjects.size(); i++) {
+            midPhysicsObjects.add(new TimestampedPhysicsObject(physicsObjects.get(i), 0.0));
+            finalPhysicsObjects.add(physicsObjects.get(i).physicsStep(dt));
+        }
+
 
         
 
@@ -45,30 +46,32 @@ public class Engine extends JComponent {
         // it's probably best done with just arraylists or something
         // oh well
         PriorityQueue<Collision> collisionQueue = new PriorityQueue<>(5, new sortByTime());
-        boolean[][] collisionDected = new boolean[steppedPhysicsObjects.size()-1][steppedPhysicsObjects.size()];
+        boolean[][] collisionDected = new boolean[finalPhysicsObjects.size()-1][finalPhysicsObjects.size()];
 
         do {
             if (collisionQueue.peek() != null) {
                 Collision collision = collisionQueue.poll();
-                PhysicsObject firstAtCollision = collision.first.physicsStep(collision.time);
-                PhysicsObject secondAtCollision = collision.second.physicsStep(collision.time);
-                PhysicsObject.resolveCollision(firstAtCollision, secondAtCollision);
-                collision.first.combine(firstAtCollision.physicsStep(dt - collision.time));
-                collision.second.combine(secondAtCollision.physicsStep(dt - collision.time));
+                PhysicsObject iAtCollision = midPhysicsObjects.get(collision.i).getAtTime(collision.time);
+                PhysicsObject jAtCollision = midPhysicsObjects.get(collision.j).getAtTime(collision.time);
+                PhysicsObject.resolveCollision(iAtCollision, jAtCollision);
+                midPhysicsObjects.set(collision.i, new TimestampedPhysicsObject(iAtCollision, collision.time));
+                midPhysicsObjects.set(collision.j, new TimestampedPhysicsObject(jAtCollision, collision.time));
+                finalPhysicsObjects.set(collision.i, midPhysicsObjects.get(collision.i).getAtTime(dt));
+                finalPhysicsObjects.set(collision.j, midPhysicsObjects.get(collision.j).getAtTime(dt));
             }
 
-            for (int i = 0; i < steppedPhysicsObjects.size()-1; i++) {
-                for (int j = i+1; j < steppedPhysicsObjects.size(); j++) {
+            for (int i = 0; i < physicsObjects.size()-1; i++) {
+                for (int j = i+1; j < physicsObjects.size(); j++) {
 
-                    ArrayList<ArrayList<Vector2>> currentCollidingPoints = PhysicsObject.collidingPoints(steppedPhysicsObjects.get(i), steppedPhysicsObjects.get(j));
+                    ArrayList<ArrayList<Vector2>> currentCollidingPoints = PhysicsObject.collidingPoints(finalPhysicsObjects.get(i), finalPhysicsObjects.get(j));
                     ArrayList<ArrayList<Vector2>> previousCollidingPoints = PhysicsObject.collidingPoints(physicsObjects.get(i), physicsObjects.get(j));
+                    
 
                     boolean currentlyColliding = currentCollidingPoints.get(0).size() > 0 || currentCollidingPoints.get(1).size() > 0;
                     boolean previouslyColliding = previousCollidingPoints.get(0).size() > 0 || previousCollidingPoints.get(1).size() > 0;
 
                     if (!collisionDected[i][j] && currentlyColliding && !previouslyColliding) {
-                        //System.out.println();
-                        collisionQueue.add(findEarlistCollision(physicsObjects.get(i), physicsObjects.get(j), dt, 0.0001));
+                        collisionQueue.add(findEarlistCollision(midPhysicsObjects, i, j, dt, 0.0001));
                         collisionDected[i][j] = true;
                     }
                 }
@@ -76,23 +79,45 @@ public class Engine extends JComponent {
         } while (!collisionQueue.isEmpty());
         
         for (int i = 0; i < physicsObjects.size(); i++) {
-            physicsObjects.get(i).combine(steppedPhysicsObjects.get(i));
+            physicsObjects.get(i).combine(finalPhysicsObjects.get(i));
         }
 
         scene.gameObjects.addAll(waitToAdd);
         waitToAdd = new ArrayList<>();
     }
 
+    private class TimestampedPhysicsObject {
+        PhysicsObject object;
+        double time;
+
+        TimestampedPhysicsObject(PhysicsObject object, double time) {
+            this.object = object;
+            this.time = time;
+        }
+
+        public PhysicsObject getAtTime(double end) {
+            if (end - time < 0) {
+                try {
+                    throw new Exception("asking TimestampedPhysicsObject to go before its time");
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            return object.physicsStep(end - time);
+        }
+    }
+
     private class Collision {
         double time;
-        PhysicsObject first;
-        PhysicsObject second;
+        int i;
+        int j;
         Vector2 point;
 
-        Collision(double time, PhysicsObject first, PhysicsObject second, Vector2 point) {
+        Collision(double time, int i, int j, Vector2 point) {
             this.time = time;
-            this.first = first;
-            this.second = second;
+            this.i = i;
+            this.j = j;
             this.point = point;
         }
     }
@@ -105,57 +130,52 @@ public class Engine extends JComponent {
         }
     }
 
-    private Collision findEarlistCollision(PhysicsObject firstObject, PhysicsObject secondObject, double maxTime, double timeEpsilon) {
+    private Collision findEarlistCollision(List<TimestampedPhysicsObject> midPhysicsObjects, int i, int j, double maxTime, double timeEpsilon) {
+        double low = Math.max(midPhysicsObjects.get(i).time, midPhysicsObjects.get(j).time);
+        double high = maxTime;
+        PhysicsObject maxFirstObject = midPhysicsObjects.get(i).getAtTime(maxTime);
+        PhysicsObject maxSecondObject = midPhysicsObjects.get(j).getAtTime(maxTime);
+        ArrayList<ArrayList<Vector2>> collidingPoints = PhysicsObject.collidingPoints(maxFirstObject, maxSecondObject);
+        Vector2 collisionPoint = returnOnlyPoint(collidingPoints);
+
         // .5^x * maxTime <= timeEpsilon
         // .5^x <= timeEpsilon/maxTime
         // x <= log_1/2 (timeEpsilon/maxTime)
         // x <= -log_2 timeEpsilon/maxTime
         // x <= -(log(timeEpsilon/maxTime) / log(2))
-        double low = 0;
-        double high = maxTime;
-        ArrayList<ArrayList<Vector2>> collidingPoints = null;
-        Vector2 collisionPoint = null;
-        for (int i = 0; i <= -Math.log(timeEpsilon/maxTime) / Math.log(2); i++) {
+        for (int run = 0; run <= -Math.log(timeEpsilon/maxTime) / Math.log(2); run++) {
             double middle = (low + high)/2;
-            collidingPoints = PhysicsObject.collidingPoints(firstObject.physicsStep(middle), secondObject.physicsStep(middle));
+            collidingPoints = PhysicsObject.collidingPoints(midPhysicsObjects.get(i).getAtTime(middle), midPhysicsObjects.get(j).getAtTime(middle));
             if (collidingPoints.get(0).size() > 0 || collidingPoints.get(1).size() > 0) {
-                if (collidingPoints.get(0).size() == 1 && collidingPoints.get(1).size() == 0) {
-                    collisionPoint = collidingPoints.get(0).get(0);
-                } else if (collidingPoints.get(0).size() == 0 && collidingPoints.get(1).size() == 1) {
-                    collisionPoint = collidingPoints.get(1).get(0);
-                }
-                
+                collisionPoint = returnOnlyPoint(collidingPoints);
                 high = middle;
             } else {
                 low = middle;
             }
-
-            // if (collidingPoints != null) {
-            //     for (Vector2 point : collidingPoints.get(0)) {
-            //         // System.out.print(i);
-            //         // System.out.print(" ");
-            //         waitToAdd.add(new Marker(point));
-            //     }
-            //     //System.out.println();
-            //     for (Vector2 point : collidingPoints.get(1)) {
-            //         // System.out.print(j);
-            //         // System.out.print(" ");
-            //         waitToAdd.add(new Marker(point));
-            //     }
-            // }
         }
-
+        
+        
         waitToAdd.add(new Marker(collisionPoint));
-        return new Collision(low, firstObject, secondObject, collisionPoint);
+
+        return new Collision(low, i, j, collisionPoint);
     }
-    
-    private ArrayList<PhysicsObject> getSteppedPhysicsObjects(List<PhysicsObject> physicsObjects, double dt) {
-        ArrayList<PhysicsObject> steppedPhysicsObjects = new ArrayList<>();
-        for (int i = 0; i < physicsObjects.size(); i++) {
-            steppedPhysicsObjects.add(physicsObjects.get(i).physicsStep(dt));
+
+    private Vector2 returnOnlyPoint(ArrayList<ArrayList<Vector2>> twoLists) {
+        if (twoLists.get(0).size() == 1 && twoLists.get(1).size() == 0) {
+            return twoLists.get(0).get(0);
+        } else if (twoLists.get(0).size() == 0 && twoLists.get(1).size() == 1) {
+            return twoLists.get(1).get(0);
         }
-        return steppedPhysicsObjects;
-    }
+        return null;
+    } 
+    
+    // private ArrayList<PhysicsObject> getSteppedPhysicsObjects(List<PhysicsObject> physicsObjects, double dt) {
+    //     ArrayList<PhysicsObject> steppedPhysicsObjects = new ArrayList<>();
+    //     for (int i = 0; i < physicsObjects.size(); i++) {
+    //         steppedPhysicsObjects.add(physicsObjects.get(i).physicsStep(dt));
+    //     }
+    //     return steppedPhysicsObjects;
+    // }
 
     @Override
     public void paintComponent(Graphics g) {
