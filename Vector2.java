@@ -39,7 +39,7 @@ public class Vector2 {
     }
 
     public static double dot(Vector2 v, Vector2 u) {
-        return v.x*u.y+v.x*u.y;
+        return v.x*u.x+v.y*u.y;
     }
 
     public static double cross(Vector2 v, Vector2 u) {

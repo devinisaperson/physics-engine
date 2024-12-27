@@ -204,7 +204,31 @@ public class PhysicsObject implements GameObject {
         return false; // Doesn't fall in any of the above cases
     }
 
-    public static ArrayList<ArrayList<Vector2>> collidingPoints(PhysicsObject physicsObject0, PhysicsObject physicsObject1) {
+    private static Vector2 findIntersectPoint(LineSegment s1, LineSegment s2) {
+        if (doIntersect(s1, s2)) {
+            double m1 = (s1.first.y - s1.second.y)/(s1.first.x - s1.second.x);
+            double m2 = (s2.first.y - s2.second.y)/(s2.first.x - s2.second.x);
+            // y = mx + b
+            // y - mx = b
+            double b1 = s1.first.y - m1*s1.first.x;
+            double b2 = s1.first.y - m1*s1.first.x;
+
+            if (s1.first.x - s1.second.x == 0) {
+                return new Vector2(s1.first.x, m2 * s1.first.x + b2);
+            }
+            if (s2.first.x - s2.second.x == 0) {
+                return new Vector2(s2.first.x, m1 * s2.first.x + b1);
+            }
+
+            // https://www.baeldung.com/java-intersection-of-two-lines
+            double x = (b2 - b1) / (m1 - m2);
+            double y = m1 * x + b1;
+            return new Vector2(x,y);
+        }
+        return null;
+    }
+
+    public static ArrayList<ArrayList<Integer>> collidingPoints(PhysicsObject physicsObject0, PhysicsObject physicsObject1) {
         
 
         List<LineSegment> segmentList0 = new ArrayList<>();
@@ -239,7 +263,7 @@ public class PhysicsObject implements GameObject {
             }
         }
 
-        ArrayList<ArrayList<Vector2>> collidingPoints = new ArrayList<>();
+        ArrayList<ArrayList<Integer>> collidingPoints = new ArrayList<>();
         collidingPoints.add(new ArrayList<>());
         collidingPoints.add(new ArrayList<>());
         boolean is0in = physicsObject1.inside(pointList0.get(0));
@@ -248,7 +272,7 @@ public class PhysicsObject implements GameObject {
         for (int i = 0; i < pointList0.size(); i++) {
             if (is0in) {
                 //System.out.println(pointList0.get(i));
-                collidingPoints.get(0).add(pointList0.get(i));
+                collidingPoints.get(0).add(i);
             }
             //already inside? swap? result
             //true false true
@@ -261,7 +285,7 @@ public class PhysicsObject implements GameObject {
         for (int i = 0; i < pointList1.size(); i++) {
             if (is1in) {
                 //System.out.println(pointList1.get(i));
-                collidingPoints.get(1).add(pointList1.get(i));
+                collidingPoints.get(1).add(i);
             }
             is1in = is1in ^ prefix1[i];
         }
@@ -295,50 +319,77 @@ public class PhysicsObject implements GameObject {
         return result;
     }
 
-    public static void resolveCollision(PhysicsObject physicsObject0, PhysicsObject physicsObject1) {
-        // System.out.println(physicsObject0);
-        // System.out.println(physicsObject1);
-        physicsObject0.color = new Color(0x00ffff);
-        physicsObject1.color = new Color(0x00ffff);
+    private int hitSegementIndex(Vector2 start, Vector2 end) {
+        double minDistance = Double.MAX_VALUE;
+        int result = -1;
+        List<Vector2> pointList = getPointsWorld();
+        for (int i = 0; i < pointList.size(); i++) {
+            LineSegment segment = new LineSegment(pointList.get(i), pointList.get((i+1)%pointList.size()));
+            Vector2 collisionPoint = findIntersectPoint(new LineSegment(start, end), segment);
+            if (collisionPoint != null) {
+                double distance = collisionPoint.minus(start).magnitude();
+                if (distance <= minDistance) {
+                    minDistance = distance;
+                    result = i;
+                }
+            }
+        }
+        return result;
     }
 
-    private static class LineSegment /*implements Comparable<LineSegment>*/{
+    public static void resolveCollision(PhysicsObject physicsObjectA, PhysicsObject physicsObjectB, Vector2 point) {
+        
+        physicsObjectA.color = new Color(0x00ffff);
+        physicsObjectB.color = new Color(0x00ffff);
+    }
+
+    public static void pointEdgeCollision(PhysicsObject pointObject, Vector2 start, Vector2 end, PhysicsObject edgeObject) {
+        pointObject.color = new Color(0x00ffff);
+        edgeObject.color = new Color(0x00ffff);
+        int segmentIndex = edgeObject.hitSegementIndex(start, end);
+        if (segmentIndex == -1) {
+            return;
+        }
+        List<Vector2> pointList = edgeObject.getPointsWorld();
+        LineSegment segment = new LineSegment(pointList.get(segmentIndex), pointList.get((segmentIndex+1)%pointList.size()));
+        Vector2 collisionPoint = findIntersectPoint(new LineSegment(start, end), segment);
+        
+        // https://www.myphysicslab.com/engine2D/collision-en.html
+        double m_a = pointObject.physicsShape.getMass(); //mass of bodies A, B
+        double m_b = edgeObject.physicsShape.getMass(); 
+        double I_a = pointObject.physicsShape.getInertia();
+        double I_b = pointObject.physicsShape.getInertia();
+        Vector2 r_ap = collisionPoint.minus(pointObject.position); //distance vector from center of mass of body A to point P
+        Vector2 r_bp = collisionPoint.minus(edgeObject.position); //distance vector from center of mass of body B to point P
+        double w_a1 = pointObject.omega; //initial pre-collision angular velocity of bodies A, B
+        double w_b1 = edgeObject.omega;
+        Vector2 v_a1 = pointObject.velocity; //initial pre-collision velocities of center of mass bodies A, B
+        Vector2 v_b1 = edgeObject.velocity;
+        Vector2 v_ap1 = v_a1.add(r_ap.scale(w_a1)); //initial pre-collision velocity of impact point P on body A
+        Vector2 v_bp1 = v_b1.add(r_bp.scale(w_b1)); //initial pre-collision velocity of impact point P on body B
+        Vector2 vp1 = v_ap1.minus(v_bp1); //pre-collision relative velocity of impact points on body A, B
+        Vector2 n = segment.first.minus(segment.second).normal().normalize(); //normal (perpendicular) vector to edge of body B
+        double e = 1.0; //(0 = inelastic, 1 = perfectly elastic)
+        double thinga = Math.pow(r_ap.cross(n), 2.0)/I_a;
+        double thingb =  Math.pow(r_bp.cross(n), 2.0)/I_b;
+        double num = (-(1.0 + e) * vp1.dot(n));
+        double denom = (1/m_a + 1/m_b + thinga + thingb);
+        double j = num/denom;
+
+        pointObject.velocity = v_a1.add(n.scale(j/m_a));
+        edgeObject.velocity = v_b1.minus(n.scale(j/m_b));
+        
+        pointObject.omega = w_a1 + (r_ap.cross(n.scale(j)))/I_a;
+        pointObject.omega = w_b1 - (r_bp.cross(n.scale(j)))/I_b;
+    }
+
+    private static class LineSegment {
         Vector2 first;
         Vector2 second;
 
         public LineSegment(Vector2 v, Vector2 u) {
             this.first = v;
             this.second = u;
-            
-            // if (v.x <= u.x) {
-            //     left = v;
-            //     right = u;
-            // } else {
-            //     left = u;
-            //     right = v;
-            // }
         }
-
-        // public Vector2 getLeft() {
-        //     if (first.x <= second.x) {
-        //         return first;
-        //     } else {
-        //         return second;
-        //     }
-        // }
-
-        // public Vector2 getRight() {
-        //     if (first.x <= second.x) {
-        //         return second;
-        //     } else {
-        //         return first;
-        //     }
-        // }
-        
-        // @Override
-        // public int compareTo(LineSegment that) {
-        //     return (int)Math.signum(this.left.x - that.left.x);
-        // }
     }
-    
 }
