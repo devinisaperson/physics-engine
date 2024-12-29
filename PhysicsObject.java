@@ -392,6 +392,9 @@ public class PhysicsObject implements GameObject {
             // Vector2 start = jAtCollision.getPointsWorld().get(collision.pointIndexes.get(1).get(0));
             // Vector2 end = collision.points.get(1).get(0);
             result = PhysicsObject.pointEdgeCollision(collision.pointIndexes.get(1).get(0), collision.jOutside, collision.jInside, collision.iOutside, collision.iInside);
+            PhysicsObject temp = result[0];
+            result[0] = result[1];
+            result[1] = temp;
         }
 
         for (PhysicsObject physicsObject : result) {
