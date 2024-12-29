@@ -88,7 +88,7 @@ public class PhysicsObject implements GameObject {
 
     private void physicsUpdateSelf(double dt) {
 
-        alpha += omega*-0.1/physicsShape.getInertia();
+        //alpha += omega*-0.1/physicsShape.getInertia();
         //System.out.println()
 
         velocity = velocity.add(acceleration.scale(dt));
@@ -350,7 +350,7 @@ public class PhysicsObject implements GameObject {
 
         // bt+c=0
         // t=-c/b
-        if (a == 0) {
+        if (Math.abs(a) < 2 * Double.MIN_VALUE) {
             double linearRoot = -c/b;
             if (0 <= linearRoot && linearRoot <= 1) {
                 return linearRoot;
@@ -371,10 +371,10 @@ public class PhysicsObject implements GameObject {
         double lowRoot = vertex - offset;
         double highRoot = vertex + offset;
         
-        if (0 <= lowRoot && lowRoot <= 0 && lowRoot <= highRoot) {
+        if (0 <= lowRoot && lowRoot <= 1 && lowRoot <= highRoot) {
             return lowRoot;
         }
-        if (0 <= highRoot && highRoot <= 0) {
+        if (0 <= highRoot && highRoot <= 1) {
             return highRoot;
         }
 
@@ -448,8 +448,9 @@ public class PhysicsObject implements GameObject {
         double w_b1 = edgeObject.omega;
         Vector2 v_a1 = pointObject.velocity; //initial pre-collision velocities of center of mass bodies A, B
         Vector2 v_b1 = edgeObject.velocity;
-        Vector2 v_ap1 = v_a1.add(r_ap.scale(w_a1)); //initial pre-collision velocity of impact point P on body A
-        Vector2 v_bp1 = v_b1.add(r_bp.scale(w_b1)); //initial pre-collision velocity of impact point P on body B
+        //this is a weird cross product but not cross product thing
+        Vector2 v_ap1 = v_a1.add(r_ap.normal().scale(-w_a1)); //initial pre-collision velocity of impact point P on body A
+        Vector2 v_bp1 = v_b1.add(r_bp.normal().scale(-w_b1)); //initial pre-collision velocity of impact point P on body B
         Vector2 vp1 = v_ap1.minus(v_bp1); //pre-collision relative velocity of impact points on body A, B
         Vector2 n = segment.first.minus(segment.second).normal().normalize(); //normal (perpendicular) vector to edge of body B
         double e = 1.0; //(0 = inelastic, 1 = perfectly elastic)
