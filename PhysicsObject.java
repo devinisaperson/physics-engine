@@ -3,6 +3,8 @@ import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.text.Segment;
+
 public class PhysicsObject implements GameObject {
     PhysicsPolygon physicsShape;
     Vector2 position = new Vector2(5,12);
@@ -21,10 +23,10 @@ public class PhysicsObject implements GameObject {
     public PhysicsObject() {
         List<Vector2> points = new ArrayList<>();
         points.add(new Vector2(0,0));
-        points.add(new Vector2(0,1));
-        points.add(new Vector2(0.5,0.5));
-        points.add(new Vector2(1,1));
         points.add(new Vector2(1,0));
+        points.add(new Vector2(1,1));
+        points.add(new Vector2(0.5,0.5));
+        points.add(new Vector2(0,1));
 
         physicsShape = new PhysicsPolygon(points, 1.0);
         updatePivot();
@@ -123,6 +125,10 @@ public class PhysicsObject implements GameObject {
     @Override
     public Vector2 localToWorld(Vector2 v) {
         return v.rotate(rotation).add(position);
+    }
+
+    public Vector2 getPointWorld(int idx) {
+        return localToWorld(physicsShape.getPoints().get(idx));
     }
 
     public ArrayList<Vector2> getPointsWorld() {
@@ -319,40 +325,112 @@ public class PhysicsObject implements GameObject {
         return result;
     }
 
-    private int hitSegementIndex(Vector2 start, Vector2 end) {
-        double minDistance = Double.MAX_VALUE;
-        int result = -1;
-        List<Vector2> pointList = getPointsWorld();
-        for (int i = 0; i < pointList.size(); i++) {
-            LineSegment segment = new LineSegment(pointList.get(i), pointList.get((i+1)%pointList.size()));
-            Vector2 collisionPoint = findIntersectPoint(new LineSegment(start, end), segment);
-            if (collisionPoint != null) {
-                double distance = collisionPoint.minus(start).magnitude();
-                if (distance <= minDistance) {
-                    minDistance = distance;
-                    result = i;
-                }
-            }
+    private static Double findCollisionTime(Vector2 startPoint, Vector2 endPoint, LineSegment startSegment, LineSegment endSegment) {
+        /*
+         * https://www.desmos.com/calculator/jskox1ak4j
+         * 1 = startSegment.first
+         * 2 = startSegment.second
+         * 3 = endSegment.first
+         * 4 = endSegment.second
+         * 5 = startPoint
+         * 6 = endPoint
+         */
+
+        // these vectors probably mean something
+        // I have no idea what they mean other than the algerba works out this way
+        
+        Vector2 A = startPoint.minus(startSegment.first);
+        Vector2 B = endPoint.minus(startPoint).minus(endSegment.first).add(startSegment.first);
+        Vector2 C = startSegment.first.minus(startSegment.second);
+        Vector2 D = endSegment.first.minus(startSegment.first).minus(endSegment.second).add(startSegment.second);
+        
+        double c = A.cross(C);
+        double b = A.cross(D) + B.cross(C);
+        double a = B.cross(D);
+
+        // double xa = startPoint.x - startSegment.first.x;
+        // double xb = endPoint.x - startPoint.x - endSegment.first.x + startSegment.first.x;
+        // double xc = startSegment.first.x - startSegment.second.x;
+        // double xd = endSegment.first.x - startSegment.first.x - endSegment.second.x + startSegment.second.x;
+
+        //quadratic formula
+        double determinant = b*b - 4*a*c;
+
+        if (determinant < 0) {
+            return null;
         }
+
+        double vertex = -b/(2*a);
+        double offset = Math.sqrt(determinant)/(2*a);
+
+        double lowRoot = vertex - offset;
+        double highRoot = vertex + offset;
+        
+        if (0 <= lowRoot && lowRoot <= 0 && lowRoot <= highRoot) {
+            return lowRoot;
+        }
+        if (0 <= highRoot && highRoot <= 0) {
+            return highRoot;
+        }
+
+        return null;
+    }
+
+    public static PhysicsObject[] resolveCollision(Collision collision) {
+        PhysicsObject[] result = null;
+        
+        if (collision.points.get(0).size() == 1 && collision.points.get(1).size() == 0) {
+            // Vector2 start = iAtCollision.getPointsWorld().get(collision.pointIndexes.get(0).get(0));
+            // Vector2 end = collision.points.get(0).get(0);
+            result = PhysicsObject.pointEdgeCollision(collision.pointIndexes.get(0).get(0), collision.iOutside, collision.iInside, collision.jOutside, collision.jInside);
+        } else if (collision.points.get(1).size() == 1 && collision.points.get(0).size() == 0) {
+            // Vector2 start = jAtCollision.getPointsWorld().get(collision.pointIndexes.get(1).get(0));
+            // Vector2 end = collision.points.get(1).get(0);
+            result = PhysicsObject.pointEdgeCollision(collision.pointIndexes.get(1).get(0), collision.jOutside, collision.jInside, collision.iOutside, collision.iInside);
+        }
+
+        for (PhysicsObject physicsObject : result) {
+            physicsObject.color = new Color(0x00ffff);
+        }
+
         return result;
     }
 
-    public static void resolveCollision(PhysicsObject physicsObjectA, PhysicsObject physicsObjectB, Vector2 point) {
-        
-        physicsObjectA.color = new Color(0x00ffff);
-        physicsObjectB.color = new Color(0x00ffff);
-    }
+    public static PhysicsObject[] pointEdgeCollision(int pointIndex, PhysicsObject pointOutside, PhysicsObject pointInside, PhysicsObject edgeOutside, PhysicsObject edgeInside) {
+        ArrayList<ArrayList<Integer>> debugList = collidingPoints(pointInside, edgeInside);
 
-    public static void pointEdgeCollision(PhysicsObject pointObject, Vector2 start, Vector2 end, PhysicsObject edgeObject) {
-        pointObject.color = new Color(0x00ffff);
-        edgeObject.color = new Color(0x00ffff);
-        int segmentIndex = edgeObject.hitSegementIndex(start, end);
-        if (segmentIndex == -1) {
-            return;
+        PhysicsObject pointObject = new PhysicsObject(pointOutside);
+        PhysicsObject edgeObject = new PhysicsObject(edgeOutside);
+
+        Vector2 start = pointOutside.getPointWorld(pointIndex);
+        Vector2 end = pointInside.getPointWorld(pointIndex);
+        List<Vector2> edgeOutsidePoints = edgeOutside.getPointsWorld();
+        List<Vector2> edgeInsidePoints = edgeInside.getPointsWorld();
+
+        int segementIndex = -1;
+        double minTime = 1.0;
+        for (int i = 0; i < edgeOutsidePoints.size(); i++) {
+            Double collisionTime = findCollisionTime(
+                start, 
+                end, 
+                new LineSegment(edgeOutsidePoints.get(i), edgeOutsidePoints.get((i+1)%edgeOutsidePoints.size())),
+                new LineSegment(edgeInsidePoints.get(i), edgeInsidePoints.get((i+1)%edgeInsidePoints.size()))
+            );
+            if (collisionTime != null && collisionTime <= minTime) {
+                segementIndex = i;
+                minTime = collisionTime;
+            }
         }
-        List<Vector2> pointList = edgeObject.getPointsWorld();
-        LineSegment segment = new LineSegment(pointList.get(segmentIndex), pointList.get((segmentIndex+1)%pointList.size()));
-        Vector2 collisionPoint = findIntersectPoint(new LineSegment(start, end), segment);
+
+        if (segementIndex == -1) {
+            return new PhysicsObject[]{pointOutside, edgeOutside};
+        }
+
+        Vector2 collisionPoint = Vector2.lerp(start, end, minTime);
+        LineSegment segment = new LineSegment(
+            Vector2.lerp(edgeOutsidePoints.get(segementIndex), edgeInsidePoints.get(segementIndex), minTime),
+            Vector2.lerp(edgeOutsidePoints.get((segementIndex+1)%edgeOutsidePoints.size()), edgeInsidePoints.get((segementIndex+1)%edgeInsidePoints.size()), minTime)
+        );
         
         // https://www.myphysicslab.com/engine2D/collision-en.html
         double m_a = pointObject.physicsShape.getMass(); //mass of bodies A, B
@@ -380,7 +458,9 @@ public class PhysicsObject implements GameObject {
         edgeObject.velocity = v_b1.minus(n.scale(j/m_b));
         
         pointObject.omega = w_a1 + (r_ap.cross(n.scale(j)))/I_a;
-        pointObject.omega = w_b1 - (r_bp.cross(n.scale(j)))/I_b;
+        edgeObject.omega = w_b1 - (r_bp.cross(n.scale(j)))/I_b;
+
+        return new PhysicsObject[]{pointObject, edgeObject};
     }
 
     private static class LineSegment {

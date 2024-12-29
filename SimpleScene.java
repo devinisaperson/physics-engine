@@ -5,7 +5,7 @@ public class SimpleScene extends Scene {
         // physicsObject0.rotation = 8.341661758165259;
         physicsObject0.position = new Vector2(7,5);
         physicsObject0.rotation = Math.TAU/8;
-        physicsObject0.velocity = new Vector2(-5,0);
+        physicsObject0.velocity = new Vector2(-5,1.5);
 
         PhysicsObject physicsObject1 = new PhysicsObject();
         physicsObject1.position = new Vector2(3,5);

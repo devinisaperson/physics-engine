@@ -30,7 +30,6 @@ public class Engine extends JComponent {
             }
         }
         
-        
         List<TimestampedPhysicsObject> midPhysicsObjects = new ArrayList<>();
         List<PhysicsObject> finalPhysicsObjects = new ArrayList<>();
 
@@ -38,9 +37,6 @@ public class Engine extends JComponent {
             midPhysicsObjects.add(new TimestampedPhysicsObject(physicsObjects.get(i), 0.0));
             finalPhysicsObjects.add(physicsObjects.get(i).physicsStep(dt));
         }
-
-
-        
 
         // it's 4:22 am, I do not know what the correct data structures are to keep track of this stuff
         // it's probably best done with just arraylists or something
@@ -51,23 +47,10 @@ public class Engine extends JComponent {
         do {
             if (collisionQueue.peek() != null) {
                 Collision collision = collisionQueue.poll();
-                PhysicsObject iAtCollision = midPhysicsObjects.get(collision.i).getAtTime(collision.time);
-                PhysicsObject jAtCollision = midPhysicsObjects.get(collision.j).getAtTime(collision.time);
-                //PhysicsObject.resolveCollision(iAtCollision, jAtCollision, collision.point);
-
-                if (collision.points.get(0).size() == 1 && collision.points.get(1).size() == 0) {
-                    Vector2 start = iAtCollision.getPointsWorld().get(collision.pointIndexes.get(0).get(0));
-                    Vector2 end = collision.points.get(0).get(0);
-                    PhysicsObject.pointEdgeCollision(iAtCollision, start, end, jAtCollision);
-                } else if (collision.points.get(1).size() == 1 && collision.points.get(0).size() == 0) {
-                    Vector2 start = jAtCollision.getPointsWorld().get(collision.pointIndexes.get(1).get(0));
-                    Vector2 end = collision.points.get(1).get(0);
-                    PhysicsObject.pointEdgeCollision(jAtCollision, start, end, iAtCollision);
-                }
-
+                PhysicsObject[] collidedObjects = PhysicsObject.resolveCollision(collision);
                 
-                midPhysicsObjects.set(collision.i, new TimestampedPhysicsObject(iAtCollision, collision.time));
-                midPhysicsObjects.set(collision.j, new TimestampedPhysicsObject(jAtCollision, collision.time));
+                midPhysicsObjects.set(collision.i, new TimestampedPhysicsObject(collidedObjects[0], collision.time));
+                midPhysicsObjects.set(collision.j, new TimestampedPhysicsObject(collidedObjects[1], collision.time));
                 finalPhysicsObjects.set(collision.i, midPhysicsObjects.get(collision.i).getAtTime(dt));
                 finalPhysicsObjects.set(collision.j, midPhysicsObjects.get(collision.j).getAtTime(dt));
             }
@@ -120,21 +103,7 @@ public class Engine extends JComponent {
         }
     }
 
-    private class Collision {
-        double time;
-        int i;
-        int j;
-        ArrayList<ArrayList<Integer>> pointIndexes;
-        ArrayList<ArrayList<Vector2>> points;
-
-        Collision(double time, int i, int j, ArrayList<ArrayList<Integer>> pointIndexes, ArrayList<ArrayList<Vector2>> points) {
-            this.time = time;
-            this.i = i;
-            this.j = j;
-            this.pointIndexes = pointIndexes;
-            this.points = points;
-        }
-    }
+    
 
     private class sortByTime implements Comparator<Collision> {
         @Override
@@ -149,6 +118,10 @@ public class Engine extends JComponent {
         double high = maxTime;
         PhysicsObject maxFirstObject = midPhysicsObjects.get(i).getAtTime(maxTime);
         PhysicsObject maxSecondObject = midPhysicsObjects.get(j).getAtTime(maxTime);
+        PhysicsObject iAfter = maxFirstObject;
+        PhysicsObject jAfter = maxSecondObject;
+        PhysicsObject iBefore = midPhysicsObjects.get(i).getAtTime(0);
+        PhysicsObject jBefore = midPhysicsObjects.get(j).getAtTime(0);
         ArrayList<ArrayList<Integer>> collidingPoints = PhysicsObject.collidingPoints(maxFirstObject, maxSecondObject);
         ArrayList<ArrayList<Integer>> lastCollidingPoints = collidingPoints;
         ArrayList<ArrayList<Vector2>> lastCollidingCoordinates = new ArrayList<>();
@@ -158,7 +131,7 @@ public class Engine extends JComponent {
         }
         lastCollidingCoordinates.add(new ArrayList<>());
         for (Integer idx : lastCollidingPoints.get(1)) {
-            lastCollidingCoordinates.get(1).add(maxFirstObject.getPointsWorld().get(idx));
+            lastCollidingCoordinates.get(1).add(maxSecondObject.getPointsWorld().get(idx));
         }
 
         // .5^x * maxTime <= timeEpsilon
@@ -173,7 +146,6 @@ public class Engine extends JComponent {
             
             collidingPoints = PhysicsObject.collidingPoints(midFirstObject, midSecondObject);
             if (collidingPoints.get(0).size() > 0 || collidingPoints.get(1).size() > 0) {
-
                 lastCollidingPoints = collidingPoints;
 
                 lastCollidingCoordinates = new ArrayList<>();
@@ -186,8 +158,12 @@ public class Engine extends JComponent {
                     lastCollidingCoordinates.get(1).add(midSecondObject.getPointsWorld().get(idx));
                 }
 
+                iAfter = midFirstObject;
+                jAfter = midSecondObject;
                 high = middle;
             } else {
+                iBefore = midFirstObject;
+                jBefore = midSecondObject;
                 low = middle;
             }
         }
@@ -199,7 +175,7 @@ public class Engine extends JComponent {
             waitToAdd.add(new Marker(point));
         }
 
-        return new Collision(low, i, j, lastCollidingPoints, lastCollidingCoordinates);
+        return new Collision(i, j, low, iBefore, jBefore, iAfter, jAfter, lastCollidingPoints, lastCollidingCoordinates);
     }
 
     // private Vector2 returnOnlyPoint(ArrayList<ArrayList<Vector2>> twoLists) {

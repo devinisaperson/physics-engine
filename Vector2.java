@@ -62,6 +62,10 @@ public class Vector2 {
     public double comp(Vector2 that) {return Vector2.comp(this, that);}
     public Vector2 proj(Vector2 that) {return Vector2.proj(this, that);}
 
+    public static Vector2 lerp(Vector2 v, Vector2 u, double t) {
+        return Vector2.add(v.scale(1-t), u.scale(t));
+    }
+
     public Vector2 scale(double k) {
         return new Vector2(this.x*k, this.y*k);
     }
