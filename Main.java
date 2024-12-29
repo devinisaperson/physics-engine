@@ -39,7 +39,7 @@ public class Main {
                 while (accumulator >= physicsStepLength) {
                     engine.update(physicsStepLength);
                     accumulator -= physicsStepLength;
-                    accumulator = 0; // one physics step per frame good for debugging
+                    //accumulator = 0; // one physics step per frame good for debugging
                 }
                 frame.repaint();
                 frameCount++;

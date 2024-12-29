@@ -348,10 +348,15 @@ public class PhysicsObject implements GameObject {
         double b = A.cross(D) + B.cross(C);
         double a = B.cross(D);
 
-        // double xa = startPoint.x - startSegment.first.x;
-        // double xb = endPoint.x - startPoint.x - endSegment.first.x + startSegment.first.x;
-        // double xc = startSegment.first.x - startSegment.second.x;
-        // double xd = endSegment.first.x - startSegment.first.x - endSegment.second.x + startSegment.second.x;
+        // bt+c=0
+        // t=-c/b
+        if (a == 0) {
+            double linearRoot = -c/b;
+            if (0 <= linearRoot && linearRoot <= 1) {
+                return linearRoot;
+            }
+            return null;
+        }
 
         //quadratic formula
         double determinant = b*b - 4*a*c;
