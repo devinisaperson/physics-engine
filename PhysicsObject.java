@@ -88,7 +88,7 @@ public class PhysicsObject implements GameObject {
 
     private void physicsUpdateSelf(double dt) {
 
-        //alpha += omega*-0.1/physicsShape.getInertia();
+        alpha += omega*-0.1/physicsShape.getInertia();
         //System.out.println()
 
         velocity = velocity.add(acceleration.scale(dt));
@@ -122,7 +122,7 @@ public class PhysicsObject implements GameObject {
         // System.out.println(rotation);
     }
 
-    @Override
+    
     public Vector2 localToWorld(Vector2 v) {
         return v.rotate(rotation).add(position);
     }

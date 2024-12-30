@@ -19,11 +19,5 @@ public class Marker implements GameObject{
         
         g.drawOval((int)Math.floor(camera.worldToScreen(position).x-5), (int)Math.floor(camera.worldToScreen(position).y-5), 10, 10);
     }
-
-    @Override
-    public Vector2 localToWorld(Vector2 v) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'localToWorld'");
-    }
     
 }

@@ -13,7 +13,7 @@ public class Spring implements GameObject {
         this.endPoint = endPoint;
         this.startObject = startObject;
         this.endObject = endObject;
-        forceActor = new SpringForceActor(this, 50, 0.5);
+        forceActor = new SpringForceActor(this, 32, 0.5);
     }
 
     public Vector2 getStartWorldPosition() {
@@ -37,10 +37,4 @@ public class Spring implements GameObject {
         g.setColor(new Color(0x000000));
         g.drawLine((int)startScreenPoint.x, (int)startScreenPoint.y, (int)endScreenPoint.x, (int)endScreenPoint.y);
     }
-
-    @Override
-    public Vector2 localToWorld(Vector2 v) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'localToWorld'");
-    }    
 }
