@@ -87,7 +87,9 @@ public class PhysicsObject implements GameObject {
     }
 
     private void physicsUpdateSelf(double dt) {
-
+        // tourqe damping
+        // the force actor system should definitely be the one responcible for this
+        // but I never got around to creating a solution for just adding tourqe/putting the force in just the right spot
         alpha += omega*-0.1/physicsShape.getInertia();
         //System.out.println()
 
